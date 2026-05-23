@@ -1,0 +1,7 @@
+{
+  "framework": "vite",
+  "buildCommand": "npm ci && npm run build",
+  "startCommand": "npm start",
+  "outputDirectory": "dist",
+  "nodeVersion": "22"
+}
