@@ -1,0 +1,42 @@
+/** Footer nav targets — absolute app routes (work from every page). */
+export const FOOTER_ROUTES = {
+  "Fintech Core": { pathname: "/", hash: "#fintech" },
+  "B2B AePS": "/b2b",
+  "B2C Wallets": "/b2c",
+  "Payments API": "/api",
+  "Software Development": "/software",
+  Technology: "/technology",
+  Company: "/company",
+  "Our Stories": "/stories",
+  Blog: "/blog",
+  About: "/about",
+  Careers: "/careers",
+  Press: "/press",
+  Contact: "/contact",
+  Security: "/security",
+  Privacy: "/privacy",
+  Terms: "/terms",
+  Compliance: "/compliance",
+  "Grievance & Redressal": "/grievance",
+  Cookies: "/cookies",
+  "API Reference": "/docs",
+  Documentation: "/docs",
+  SDKs: "/sdks",
+  Changelog: "/docs",
+  Status: "/docs",
+};
+
+export const FOOTER_LINK_GROUPS = {
+  Products: [
+    "Fintech Core",
+    "B2B AePS",
+    "B2C Wallets",
+    "Payments API",
+    "Software Development",
+    "Technology",
+    "Company",
+  ],
+  Developers: ["Documentation", "API Reference", "SDKs", "Changelog", "Status"],
+  Company: ["About", "Our Stories", "Blog", "Careers", "Press", "Contact", "Security"],
+  Legal: ["Privacy", "Terms", "Compliance", "Grievance & Redressal", "Cookies"],
+};
