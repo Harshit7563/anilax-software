@@ -1,66 +1,39 @@
 # Anilax Software
 
-Fintech software company website — **Fintech · B2B · B2C · API**.
+Code ab **do alag Git repositories** mein hai:
 
-Inspired by [Google Antigravity](https://antigravity.google/) (product demo, minimal UI) and [NotebookLM](https://notebooklm.google/) (dark hero, workflow steps, testimonials, FAQ).
+| Repo | Folder | GitHub |
+|------|--------|--------|
+| **Design (UI)** | `anilax-software-design/` | https://github.com/Harshit7563/anilax-software-design |
+| **Backend (API)** | `anilax-software-backend/` | https://github.com/Harshit7563/anilax-software-backend |
 
-## Stack
+## GitHub par naye repo banana
 
-- React 19 + Vite 8
-- Plain CSS
+1. https://github.com/new → name: `anilax-software-design` → **no README**
+2. https://github.com/new → name: `anilax-software-backend` → **no README**
 
-## Pages
+## Push (Mac)
 
-| Route | Description |
-|-------|-------------|
-| `/` | Home — Fintech, B2C, API |
-| `/b2b` | B2B — AePS services & solutions |
-| `/software` | Software Development — payment & business apps |
-| `/api` | APIs — B2B, B2C, payment, SMS, verification, BBPS |
-| `/technology` | Technology — languages, dev & design stack |
-| `/company` | Company — about, office, legal, careers |
-
-## Run (local)
-
+**Design:**
 ```bash
-npm install
-npm run db:setup    # PostgreSQL tables
-npm run server      # API on :3001 (terminal 1)
-npm run dev         # site on :5173 (terminal 2)
+cd anilax-software-design
+bash deploy-connect-github.sh
 ```
 
-## GitHub
-
-1. [GitHub](https://github.com/new) par **New repository** → name: `anilax-software` (README mat add karo)
-2. Connect & push:
-
+**Backend:**
 ```bash
-bash deploy/connect-github.sh https://github.com/YOUR_USERNAME/anilax-software.git
+cd anilax-software-backend
+bash deploy-connect-github.sh
 ```
 
-## Deploy — Hostinger VPS
-
-Full guide: **[deploy/HOSTINGER-VPS.md](deploy/HOSTINGER-VPS.md)**  
-Nginx + Node API + PostgreSQL on one VPS.
-
-VPS par git se deploy:
+## Local run
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/anilax-software.git /var/www/anilax-software
+# Terminal 1
+cd anilax-software-backend && npm install && npm run dev
+
+# Terminal 2
+cd anilax-software-design && npm install && npm run dev
 ```
 
-## Sections
-
-| Section | Purpose |
-|---------|---------|
-| Hero | Dark gradient headline (NotebookLM-style) |
-| Pillars | Fintech, B2B, B2C, API cards |
-| Platform demo | Live dashboard tabs (Antigravity-style) |
-| Workflow | 3-step integration flow |
-| Segments | Deep-dive per product line |
-| API | Code samples + endpoints |
-| Testimonials | Marquee quotes |
-| Trust | Compliance badges |
-| FAQ | Accordion |
-| Footer | CTA + links |
-# anilax-software
+Purana combined repo: https://github.com/Harshit7563/anilax-software (ab use mat karo — design/backend alag repos use karo).
