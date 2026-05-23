@@ -36,4 +36,19 @@ cd anilax-software-backend && npm install && npm run dev
 cd anilax-software-design && npm install && npm run dev
 ```
 
-Purana combined repo: https://github.com/Harshit7563/anilax-software (ab use mat karo — design/backend alag repos use karo).
+## Hostinger (GitHub deploy)
+
+Repo **`anilax-software`** ab bhi chal sakta hai (root `package.json` design folder build karta hai). Latest commit **`553edb0`** ke baad **Redeploy** karo.
+
+| Setting | Value |
+|---------|--------|
+| Repository | `anilax-software` |
+| Branch | `main` |
+| Node | **22.x** |
+| Root | `./` |
+| Framework | **Vite** / Other (CRA mat chuno) |
+| Build | `npm ci && npm run build` |
+| Start | `npm start` |
+| Output | `dist` |
+
+Better long-term: deploy **`anilax-software-design`** directly (see `anilax-software-design/HOSTINGER.md`).

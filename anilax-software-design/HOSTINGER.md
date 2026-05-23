@@ -8,7 +8,7 @@
 | Framework | Create React App | **Vite** (ya Auto) |
 | Root | `./` on old repo | `./` on **design** repo |
 
-Purane `anilax-software` repo ke root par ab `package.json` nahi hai — isliye build fail.
+Purane `anilax-software` repo par bina `package.json` / design files ke build fail hota tha. Ab root par bridge `package.json` hai — redeploy se chal sakta hai; phir bhi **design repo** prefer karo.
 
 ---
 
