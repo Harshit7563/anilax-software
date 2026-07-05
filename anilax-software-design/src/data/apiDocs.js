@@ -1,15 +1,67 @@
-import { API_CATEGORIES, API_WEBHOOKS } from "./apiCatalog";
+import {
+  API_CATEGORIES,
+  API_WEBHOOKS,
+  API_STATS,
+  API_FEATURES,
+  PAYMENT_API_CATALOG,
+  SMS_API_CATALOG,
+  VERIFICATION_API_CATALOG,
+  BBPS_API_CATALOG,
+} from "./apiCatalog";
+import { B2B_API_CATALOG } from "./b2bAeps";
+import { B2C_API_CATALOG } from "./b2cApps";
 import { ANILAX_AUTH_URL } from "../lib/anilaxAuth";
+import { COMPANY_API_SANDBOX, COMPANY_API_V1 } from "./company";
 
 export const DOCS_META = {
-  title: "Anilax Payments API",
-  version: "1.0.0",
+  title: "Developer Platform",
+  productName: "Anilax Payments API",
+  version: "2.0",
   description:
-    "RESTful fintech APIs for B2B, B2C, payments, SMS, verification, BBPS, and custom integrations. JSON over HTTPS with signed webhooks.",
+    "REST fintech APIs for B2B AePS, B2C payouts, payment gateway, SMS, KYC verification, BBPS, and custom rails — sandbox-first, webhook-driven, production-ready.",
   authUrl: ANILAX_AUTH_URL,
-  baseUrl: "https://api.anilaxpayments.com",
-  sandboxUrl: "https://sandbox.api.anilaxpayments.com",
+  baseUrl: COMPANY_API_V1,
+  sandboxUrl: COMPANY_API_SANDBOX,
 };
+
+const CATALOG_BY_CATEGORY = {
+  b2b: B2B_API_CATALOG,
+  b2c: B2C_API_CATALOG,
+  payment: PAYMENT_API_CATALOG,
+  sms: SMS_API_CATALOG,
+  verification: VERIFICATION_API_CATALOG,
+  bbps: BBPS_API_CATALOG,
+};
+
+export const DOCS_QUICKSTART = [
+  {
+    step: "01",
+    title: "Authenticate",
+    desc: "Sign in, create sandbox keys, and store them server-side only.",
+  },
+  {
+    step: "02",
+    title: "Choose your rail",
+    desc: "Pick Payments, AePS, SMS, Verification, or BBPS from the product sidebar.",
+  },
+  {
+    step: "03",
+    title: "Integrate in sandbox",
+    desc: "Copy cURL or Node samples — every test call uses the sandbox base URL.",
+  },
+  {
+    step: "04",
+    title: "Webhooks & go live",
+    desc: "Subscribe to events, pass UAT, switch to live keys, and reconcile settlements.",
+  },
+];
+
+export const DOCS_SDK_LINKS = [
+  { label: "Node.js SDK", href: "/sdks", desc: "npm install" },
+  { label: "Python SDK", href: "/sdks", desc: "pip install" },
+  { label: "API catalog", href: "/api", desc: "All products" },
+  { label: "Get API keys", href: "/signup", desc: "Free sandbox" },
+];
 
 export function operationId(method, path) {
   return `${method.toLowerCase()}-${path.replace(/^\//, "").replace(/\//g, "-").replace(/[{}]/g, "")}`;
@@ -89,6 +141,79 @@ function buildParams(api) {
 
   return { pathParams, headers, query };
 }
+
+function slugFromLabel(label) {
+  return label
+    .toLowerCase()
+    .replace(/\s+api$/i, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "");
+}
+
+function inferMethod(label, explicit) {
+  if (explicit) return explicit;
+  const n = label.toLowerCase();
+  if (
+    n.includes("status") ||
+    n.includes("fetch") ||
+    n.includes("list") ||
+    n.includes("enquiry") ||
+    n.includes("statement")
+  ) {
+    return "GET";
+  }
+  return "POST";
+}
+
+function buildOperation(cat, item) {
+  const title = item.type || item.name;
+  const method = inferMethod(title, item.method);
+  const path = item.path || `/v1/${cat.id}/${slugFromLabel(title)}`;
+  const op = {
+    method,
+    path,
+  };
+
+  return {
+    id: operationId(method, path),
+    type: "operation",
+    title,
+    method,
+    path,
+    desc: item.useCase || item.desc || cat.tagline,
+    tag: cat.title,
+    ...buildParams(op),
+    requestBody:
+      method !== "GET"
+        ? { required: true, schema: SAMPLE_BODY }
+        : null,
+    responses: [
+      { status: 200, desc: "Success", example: SAMPLE_RESPONSE },
+      {
+        status: 400,
+        desc: "Invalid request",
+        example: { error: { code: "invalid_request", message: "..." } },
+      },
+      {
+        status: 401,
+        desc: "Unauthorized",
+        example: { error: { code: "unauthorized", message: "Invalid API key" } },
+      },
+    ],
+  };
+}
+
+export const DOCS_PRODUCTS = API_CATEGORIES.map((cat) => ({
+  id: cat.id,
+  icon: cat.icon,
+  title: cat.title.replace(" APIs", ""),
+  tagline: cat.tagline,
+  desc: cat.desc,
+  endpointCount:
+    cat.id === "custom"
+      ? cat.apis.length
+      : (CATALOG_BY_CATEGORY[cat.id]?.length ?? 0),
+}));
 
 export const DOCS_PAGES = {
   overview: {
@@ -210,30 +335,26 @@ export const DOCS_NAV = [
       { id: "webhooks", type: "page", title: "Webhooks" },
     ],
   },
-  ...API_CATEGORIES.map((cat) => ({
-    id: cat.id,
-    title: cat.title.replace(" APIs", ""),
-    items: cat.apis.map((api) => ({
-      id: operationId(api.method, api.path),
-      type: "operation",
-      title: api.name,
-      method: api.method,
-      path: api.path,
-      desc: api.desc,
-      tag: cat.title,
-      ...buildParams(api),
-      requestBody:
-        api.method === "POST" || api.method === "PUT"
-          ? { required: true, schema: SAMPLE_BODY }
-          : null,
-      responses: [
-        { status: 200, desc: "Success", example: SAMPLE_RESPONSE },
-        { status: 400, desc: "Invalid request", example: { error: { code: "invalid_request", message: "..." } } },
-        { status: 401, desc: "Unauthorized", example: { error: { code: "unauthorized", message: "Invalid API key" } } },
-      ],
-    })),
-  })),
+  ...API_CATEGORIES.map((cat) => {
+    const items =
+      cat.id === "custom"
+        ? cat.apis.map((api) => buildOperation(cat, api))
+        : (CATALOG_BY_CATEGORY[cat.id] || []).map((item) => buildOperation(cat, item));
+
+    return {
+      id: cat.id,
+      title: cat.title.replace(" APIs", ""),
+      items,
+    };
+  }).filter((group) => group.items.length > 0),
 ];
+
+export function getFirstDocIdInGroup(groupId) {
+  const group = DOCS_NAV.find((g) => g.id === groupId);
+  return group?.items[0]?.id ?? null;
+}
+
+export { API_STATS, API_FEATURES };
 
 export function findDocItem(id) {
   for (const group of DOCS_NAV) {

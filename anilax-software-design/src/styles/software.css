@@ -218,7 +218,7 @@
 
 .software-card--featured:hover {
   border-color: rgba(99, 102, 241, 0.4);
-  box-shadow: 0 32px 80px rgba(59, 130, 246, 0.2);
+  box-shadow: 0 32px 80px rgba(232, 93, 44, 0.18);
 }
 
 .software-card--featured .software-card__tagline,

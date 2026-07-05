@@ -1,8 +1,14 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useContactModal } from "../context/ContactModalContext";
-import { AI_DISCLAIMER } from "../data/aiKnowledge";
-import { getAiResponse, getSuggestions, getWelcomeMessage } from "../lib/aiAssistant";
+import { SHREE_DISCLAIMER } from "../data/shreeKnowledge";
+import {
+  createShreeSession,
+  getShreeSuggestions,
+  getShreeWelcome,
+  processShreeMessage,
+  syncShreeToAdmin,
+} from "../lib/aiAssistant";
 import "../styles/ai-assistant.css";
 
 function delay(ms) {
@@ -27,14 +33,19 @@ function renderText(text) {
 export function AnilaxAiAssistant() {
   const { pathname } = useLocation();
   const { openContact } = useContactModal();
+  const sessionRef = useRef(createShreeSession());
   const [panelOpen, setPanelOpen] = useState(false);
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
   const [typing, setTyping] = useState(false);
+  const [typingLabel, setTypingLabel] = useState("");
+  const [adminSynced, setAdminSynced] = useState(false);
   const listRef = useRef(null);
   const inputRef = useRef(null);
 
-  const suggestions = getSuggestions(pathname);
+  const [suggestions, setSuggestions] = useState(() =>
+    getShreeSuggestions(sessionRef.current, pathname),
+  );
 
   const scrollToEnd = useCallback(() => {
     requestAnimationFrame(() => {
@@ -46,14 +57,24 @@ export function AnilaxAiAssistant() {
     if (panelOpen) {
       scrollToEnd();
       inputRef.current?.focus();
+      document.body.classList.add("shree-panel-open");
+    } else {
+      document.body.classList.remove("shree-panel-open");
     }
+    return () => document.body.classList.remove("shree-panel-open");
   }, [panelOpen, messages, typing, scrollToEnd]);
 
   const openPanel = () => {
     setPanelOpen(true);
     if (messages.length === 0) {
-      setMessages([getWelcomeMessage(pathname)]);
+      sessionRef.current.greeted = true;
+      setMessages([getShreeWelcome(pathname)]);
+      setSuggestions(getShreeSuggestions(sessionRef.current, pathname));
     }
+  };
+
+  const appendAssistant = (payload) => {
+    setMessages((prev) => [...prev, { role: "assistant", ...payload }]);
   };
 
   const sendMessage = async (text) => {
@@ -63,19 +84,40 @@ export function AnilaxAiAssistant() {
     setMessages((prev) => [...prev, { role: "user", text: q }]);
     setInput("");
     setTyping(true);
-    await delay(350 + Math.min(q.length * 12, 400));
+    setTypingLabel(
+      sessionRef.current.lang === "en" ? "Shree is typing…" : "Shree type kar rahi hai…",
+    );
 
-    const res = getAiResponse(q, pathname);
-    setMessages((prev) => [
-      ...prev,
-      {
-        role: "assistant",
-        text: res.text,
-        links: res.links,
-        confidence: res.confidence,
-      },
-    ]);
+    const res = await processShreeMessage(q, sessionRef.current, pathname);
+    setSuggestions(getShreeSuggestions(sessionRef.current, pathname));
+    await delay(res.delay ?? 500);
+
+    appendAssistant({
+      text: res.text,
+      links: res.links ?? [],
+      confidence: res.confidence,
+    });
     setTyping(false);
+
+    if (res.escalate && !sessionRef.current.adminSynced) {
+      setTyping(true);
+      setTypingLabel("Admin team ko bhej rahi hoon…");
+      await delay(600);
+      const sync = await syncShreeToAdmin(sessionRef.current, pathname, "Customer query handoff");
+      setTyping(false);
+      if (sync.ok && !sync.already) {
+        setAdminSynced(true);
+        appendAssistant({
+          text:
+            sessionRef.current.lang === "en"
+              ? "Done — I've **shared this chat with our admin team**. A real person from Anilax will follow up soon. You can also reach us anytime if urgent."
+              : "Ho gaya — maine **poori baat admin team ko bhej di hai**. Anilax ki team jald contact karegi. Urgent ho to call bhi kar sakte ho.",
+          links: [],
+          confidence: "high",
+          handoff: true,
+        });
+      }
+    }
   };
 
   const handleSubmit = (e) => {
@@ -105,21 +147,39 @@ export function AnilaxAiAssistant() {
         <span className="ai-assistant-fab__icon" aria-hidden="true">
           {panelOpen ? "×" : "✦"}
         </span>
-        <span className="ai-assistant-fab__label">{panelOpen ? "Close" : "Ask Anilax AI"}</span>
+        <span className="ai-assistant-fab__label">{panelOpen ? "Close" : "Ask Shree"}</span>
       </button>
 
       {panelOpen && (
-        <div
-          id="anilax-ai-panel"
-          className="ai-assistant-panel"
-          role="dialog"
-          aria-label="Anilax AI assistant"
-        >
+        <>
+          <button
+            type="button"
+            className="ai-assistant-backdrop"
+            aria-label="Close Shree chat"
+            onClick={() => setPanelOpen(false)}
+          />
+          <div
+            id="anilax-ai-panel"
+            className="ai-assistant-panel"
+            role="dialog"
+            aria-label="Shree AI from Anilax Software"
+            aria-modal="true"
+          >
           <header className="ai-assistant-panel__head">
-            <div>
-              <p className="ai-assistant-panel__eyebrow">AI-assisted</p>
-              <h2 className="ai-assistant-panel__title">Anilax AI</h2>
-              <p className="ai-assistant-panel__sub">Integration & product answers</p>
+            <div className="ai-assistant-panel__avatar" aria-hidden="true">
+              S
+            </div>
+            <div className="ai-assistant-panel__meta">
+              <div className="ai-assistant-panel__title-row">
+                <h2 className="ai-assistant-panel__title">Shree AI</h2>
+                <span className="ai-assistant-panel__live">
+                  <span className="ai-assistant-panel__dot" /> Online
+                </span>
+              </div>
+              <p className="ai-assistant-panel__sub">Anilax Software</p>
+              {adminSynced && (
+                <p className="ai-assistant-panel__badge">Team ko bhej diya ✓</p>
+              )}
             </div>
             <button
               type="button"
@@ -135,8 +195,11 @@ export function AnilaxAiAssistant() {
             {messages.map((msg, i) => (
               <div
                 key={`${msg.role}-${i}`}
-                className={`ai-assistant-msg ai-assistant-msg--${msg.role}`}
+                className={`ai-assistant-msg ai-assistant-msg--${msg.role} ${msg.handoff ? "ai-assistant-msg--handoff" : ""} ${msg.special ? "ai-assistant-msg--special" : ""}`}
               >
+                {msg.role === "assistant" && (
+                  <span className="ai-assistant-msg__who">Shree</span>
+                )}
                 <p className="ai-assistant-msg__text">{renderText(msg.text)}</p>
                 {msg.links?.length > 0 && (
                   <div className="ai-assistant-msg__links">
@@ -152,11 +215,7 @@ export function AnilaxAiAssistant() {
                             {link.label}
                           </Link>
                         ) : (
-                          <a
-                            key={link.label}
-                            href={link.href}
-                            className="ai-assistant-msg__link"
-                          >
+                          <a key={link.label} href={link.href} className="ai-assistant-msg__link">
                             {link.label}
                           </a>
                         )
@@ -177,11 +236,13 @@ export function AnilaxAiAssistant() {
             ))}
             {typing && (
               <div className="ai-assistant-msg ai-assistant-msg--assistant ai-assistant-msg--typing">
-                <span className="ai-assistant-typing" aria-label="Thinking">
+                <span className="ai-assistant-msg__who">Shree</span>
+                <span className="ai-assistant-typing" aria-label={typingLabel}>
                   <span />
                   <span />
                   <span />
                 </span>
+                <span className="ai-assistant-typing__label">{typingLabel}</span>
               </div>
             )}
           </div>
@@ -205,7 +266,7 @@ export function AnilaxAiAssistant() {
               ref={inputRef}
               type="text"
               className="ai-assistant-panel__input"
-              placeholder="Ask about AePS, APIs, onboarding…"
+              placeholder="Ask about software, payments, or your business needs…"
               value={input}
               onChange={(e) => setInput(e.target.value)}
               disabled={typing}
@@ -216,8 +277,9 @@ export function AnilaxAiAssistant() {
             </button>
           </form>
 
-          <p className="ai-assistant-panel__disclaimer">{AI_DISCLAIMER}</p>
+          <p className="ai-assistant-panel__disclaimer">{SHREE_DISCLAIMER}</p>
         </div>
+        </>
       )}
     </>
   );

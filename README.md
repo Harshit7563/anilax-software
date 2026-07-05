@@ -1,54 +1,52 @@
 # Anilax Software
 
-Code ab **do alag Git repositories** mein hai:
+Live site: **https://anilaxsoftware.com**
 
-| Repo | Folder | GitHub |
-|------|--------|--------|
-| **Design (UI)** | `anilax-software-design/` | https://github.com/Harshit7563/anilax-software-design |
-| **Backend (API)** | `anilax-software-backend/` | https://github.com/Harshit7563/anilax-software-backend |
+All website code lives in **`anilax-software-design/`** (React + Vite + admin + Shree AI + Android shell).
 
-## GitHub par naye repo banana
-
-1. https://github.com/new → name: `anilax-software-design` → **no README**
-2. https://github.com/new → name: `anilax-software-backend` → **no README**
-
-## Push (Mac)
-
-**Design:**
-```bash
-cd anilax-software-design
-bash deploy-connect-github.sh
-```
-
-**Backend:**
-```bash
-cd anilax-software-backend
-bash deploy-connect-github.sh
-```
+The old root `src/`, `server/`, and `database/` folders have been removed from this repo.
 
 ## Local run
 
+**Terminal 1 — API (queries, admin, blog):**
 ```bash
-# Terminal 1
-cd anilax-software-backend && npm install && npm run dev
-
-# Terminal 2
-cd anilax-software-design && npm install && npm run dev
+cd anilax-software-design
+npm install
+npm run server
 ```
 
-## Hostinger (GitHub deploy)
+**Terminal 2 — website:**
+```bash
+cd anilax-software-design
+npm run dev
+```
 
-Repo **`anilax-software`** ab bhi chal sakta hai (root `package.json` design folder build karta hai). Latest commit **`553edb0`** ke baad **Redeploy** karo.
+Admin: **http://localhost:5173/admin/login**
+
+## Hostinger deploy
+
+Deploy this repo **`anilax-software`** or the **`anilax-software-design`** folder directly.
 
 | Setting | Value |
 |---------|--------|
-| Repository | `anilax-software` |
 | Branch | `main` |
 | Node | **22.x** |
-| Root | `./` |
-| Framework | **Vite** / Other (CRA mat chuno) |
 | Build | `npm ci && npm run build` |
 | Start | `npm start` |
 | Output | `dist` |
 
-Better long-term: deploy **`anilax-software-design`** directly (see `anilax-software-design/HOSTINGER.md`).
+Set env: `VITE_API_URL=https://anilaxsoftware.com`
+
+See **`anilax-software-design/HOSTINGER.md`** for full steps.
+
+## Backend API
+
+Backend code is in a separate repo: **`anilax-software-backend`** (see `GITHUB-SETUP.md`).
+
+## GitHub repos
+
+| Repo | Purpose |
+|------|---------|
+| [anilax-software](https://github.com/Harshit7563/anilax-software) | Root deploy (builds design subfolder) |
+| [anilax-software-design](https://github.com/Harshit7563/anilax-software-design) | UI only (optional) |
+| [anilax-software-backend](https://github.com/Harshit7563/anilax-software-backend) | API + Postgres |

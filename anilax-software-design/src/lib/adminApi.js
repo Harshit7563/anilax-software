@@ -29,14 +29,17 @@ async function adminFetch(path, options = {}) {
   return data;
 }
 
-export async function adminLogin(password) {
+export async function adminLogin(username, password) {
   const res = await fetch(`${API_BASE}/api/admin/login`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ password }),
+    body: JSON.stringify({
+      username: String(username).trim(),
+      password: String(password).trim(),
+    }),
   });
   const data = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error(data.error ?? "Invalid password");
+  if (!res.ok) throw new Error(data.error ?? "Invalid username or password");
   setAdminToken(data.token);
   return data;
 }
@@ -76,4 +79,21 @@ export function updateLeadStatus(id, status) {
 export function fetchPartnerSignups({ limit = 50, offset = 0 } = {}) {
   const q = new URLSearchParams({ limit, offset });
   return adminFetch(`/api/admin/partner-signups?${q}`);
+}
+
+export function fetchAdminBlogPosts() {
+  return adminFetch("/api/admin/blog");
+}
+
+export function createAdminBlogPost(payload) {
+  return adminFetch("/api/admin/blog", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export function deleteAdminBlogPost(slug) {
+  return adminFetch(`/api/admin/blog/${encodeURIComponent(slug)}`, {
+    method: "DELETE",
+  });
 }

@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { ConnectButton } from "../components/ConnectButton";
-import { BLOG_CATEGORIES, BLOG_HERO, BLOG_POSTS, formatBlogDate } from "../data/blogPosts";
+import { BLOG_CATEGORIES, BLOG_HERO, formatBlogDate } from "../data/blogPosts";
+import { fetchBlogPosts } from "../lib/blogApi";
 import "../styles/blog.css";
 
 const PAGE_SIZE = 12;
@@ -9,17 +10,26 @@ const PAGE_SIZE = 12;
 export function BlogPage() {
   const [category, setCategory] = useState("All");
   const [page, setPage] = useState(1);
+  const [allPosts, setAllPosts] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchBlogPosts().then((items) => {
+      setAllPosts(items);
+      setLoading(false);
+    });
+  }, []);
 
   const posts = useMemo(() => {
-    if (category === "All") return BLOG_POSTS;
-    return BLOG_POSTS.filter((p) => p.category === category);
-  }, [category]);
+    if (category === "All") return allPosts;
+    return allPosts.filter((p) => p.category === category);
+  }, [allPosts, category]);
 
   const totalPages = Math.max(1, Math.ceil(posts.length / PAGE_SIZE));
   const paginated = posts.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
   const featured =
-    BLOG_POSTS.find((p) => p.category !== "Software") ?? BLOG_POSTS[0];
+    allPosts.find((p) => p.category !== "Software") ?? allPosts[0];
 
   useEffect(() => {
     setPage(1);
@@ -28,6 +38,16 @@ export function BlogPage() {
   useEffect(() => {
     if (page > totalPages) setPage(totalPages);
   }, [page, totalPages]);
+
+  if (loading) {
+    return (
+      <div className="blog-page">
+        <section className="blog-hero">
+          <p className="blog-hero__sub">Loading articles…</p>
+        </section>
+      </div>
+    );
+  }
 
   return (
     <div className="blog-page">
@@ -41,25 +61,27 @@ export function BlogPage() {
         <p className="blog-hero__sub">{BLOG_HERO.subtitle}</p>
       </section>
 
-      <section className="blog-featured">
-        <div className="blog-section__inner">
-          <p className="section-label">Featured</p>
-          <article className="blog-featured-card">
-            <div className="blog-featured-card__meta">
-              <span className="blog-card__category">{featured.category}</span>
-              <time dateTime={featured.date}>{formatBlogDate(featured.date)}</time>
-              <span>{featured.readMinutes} min read</span>
-            </div>
-            <h2>
-              <Link to={`/blog/${featured.slug}`}>{featured.title}</Link>
-            </h2>
-            <p>{featured.excerpt}</p>
-            <Link to={`/blog/${featured.slug}`} className="blog-card__read">
-              Read article →
-            </Link>
-          </article>
-        </div>
-      </section>
+      {featured && (
+        <section className="blog-featured">
+          <div className="blog-section__inner">
+            <p className="section-label">Featured</p>
+            <article className="blog-featured-card">
+              <div className="blog-featured-card__meta">
+                <span className="blog-card__category">{featured.category}</span>
+                <time dateTime={featured.date}>{formatBlogDate(featured.date)}</time>
+                <span>{featured.readMinutes} min read</span>
+              </div>
+              <h2>
+                <Link to={`/blog/${featured.slug}`}>{featured.title}</Link>
+              </h2>
+              <p>{featured.excerpt}</p>
+              <Link to={`/blog/${featured.slug}`} className="blog-card__read">
+                Read article →
+              </Link>
+            </article>
+          </div>
+        </section>
+      )}
 
       <section className="blog-list">
         <div className="blog-section__inner">

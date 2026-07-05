@@ -214,7 +214,314 @@ function buildModules(item, profile) {
     .map((s) => s.trim())
     .filter((s) => s.length > 8)
     .slice(0, 4);
-  return [...new Set([...fromDesc, ...profile.modules])].slice(0, 6);
+  const tagModules = (item.tags ?? []).map(
+    (tag) => `${tag} dashboards, alerts, and role-based access for ${item.title}`,
+  );
+  return [...new Set([...fromDesc, ...tagModules, ...profile.modules])].slice(0, 6);
+}
+
+const STACK_BY_PROFILE = {
+  payment: [
+    "PCI-aware checkout flows · webhook signing · idempotent APIs",
+    "PostgreSQL ledger + Redis queues for high-volume settlement",
+    "React admin · Node.js services · observability dashboards",
+  ],
+  healthcare: [
+    "Role-based access with audit trails for clinical data",
+    "Secure backups · encrypted fields · consent-aware workflows",
+    "Web + optional React Native apps for staff and patients",
+  ],
+  education: [
+    "Parent/student portals with fee reminders and online pay",
+    "Bulk SMS/email · attendance sync · exam result publishing",
+    "Cloud hosting with term-wise data retention policies",
+  ],
+  retail: [
+    "Offline-capable POS · GST invoices · barcode/QR billing",
+    "Inventory sync across outlets · purchase and vendor modules",
+    "Integrations with payment devices, scales, and e-commerce",
+  ],
+  hospitality: [
+    "Table/room management · KOT routing · split billing",
+    "Aggregator hooks · kitchen display · housekeeping tasks",
+    "Peak-hour load testing and owner analytics exports",
+  ],
+  mobility: [
+    "Real-time GPS · fare engine · dispatch optimization",
+    "Driver/rider apps · wallets · incentive and payout rules",
+    "Safety SOS · trip analytics · city-wise rollout tools",
+  ],
+  fintech: [
+    "KYC journeys · ledger core · partner bank integrations",
+    "Risk limits · reconciliation · regulatory reporting exports",
+    "Pen-tested APIs · admin oversight · sandbox environments",
+  ],
+  portal: [
+    "SEO-ready CMS · moderation queues · monetization hooks",
+    "Search, categories, notifications, and partner APIs",
+    "CDN-backed media · spike-ready autoscaling architecture",
+  ],
+  enterprise: [
+    "ERP/CRM modules with approvals and department dashboards",
+    "Email/SMS/accounting integrations · export to Excel/PDF",
+    "Mobile access for field teams · staged UAT rollouts",
+  ],
+  gov: [
+    "Beneficiary registration · verification chains · MIS dashboards",
+    "Offline/low-bandwidth modes · geo reports · audit logs",
+    "District pilots before statewide rollout with training kits",
+  ],
+  general: [
+    "React / Next.js frontends · Node.js APIs · PostgreSQL or MongoDB",
+    "React Native or Flutter mobile when required",
+    "Staging + production on AWS/GCP/Azure with monitoring",
+  ],
+};
+
+function buildHighlights(item) {
+  const sentences = item.desc
+    .split(/[.!]/)
+    .map((s) => s.trim())
+    .filter((s) => s.length > 12);
+  const tagLines = (item.tags ?? []).map(
+    (tag) => `${tag}-ready workflows mapped to your ${item.title} rollout`,
+  );
+  return [...sentences, ...tagLines].slice(0, 5);
+}
+
+function buildUseCases(item, profile, profileKey) {
+  const name = item.title;
+  const templates = {
+    payment: [
+      {
+        title: "Merchant & agent onboarding",
+        text: `${name} covers KYC capture, limit setup, and settlement rules so new merchants go live without spreadsheet chaos.`,
+      },
+      {
+        title: "Daily reconciliation",
+        text: `Finance teams reconcile UPI, card, and wallet rails in one view — disputes, refunds, and MIS exports included.`,
+      },
+      {
+        title: "Partner integrations",
+        text: `Banks, gateways, and NPCI-ready APIs connect through signed webhooks and sandbox keys before production.`,
+      },
+    ],
+    healthcare: [
+      {
+        title: "Front-desk to discharge",
+        text: `${name} links registration, visits, billing, and pharmacy/lab so staff never re-type patient data.`,
+      },
+      {
+        title: "Insurance & receipts",
+        text: `Generate GST-aware bills, insurance claims support, and patient receipts from one workflow.`,
+      },
+      {
+        title: "Management visibility",
+        text: `Owners track occupancy, revenue, inventory, and compliance reports without calling IT every week.`,
+      },
+    ],
+    education: [
+      {
+        title: "Admissions to alumni",
+        text: `${name} handles admissions, attendance, fees, exams, and parent communication in one institution-wide system.`,
+      },
+      {
+        title: "Online + offline learning",
+        text: `Live classes, recorded content, quizzes, and certificates with fee reminders and payment links.`,
+      },
+      {
+        title: "Multi-branch schools",
+        text: `Central dashboards for management with branch-wise academic and financial reporting.`,
+      },
+    ],
+    retail: [
+      {
+        title: "Store-floor billing",
+        text: `${name} gives cashiers fast POS billing with GST invoices, offers, and loyalty without queue buildup.`,
+      },
+      {
+        title: "Inventory accuracy",
+        text: `Track inward/outward stock, batch/serial numbers, and multi-outlet sync in real time.`,
+      },
+      {
+        title: "Owner command center",
+        text: `Franchise and chain owners see sales, shrinkage, and purchase trends across locations.`,
+      },
+    ],
+    hospitality: [
+      {
+        title: "Guest journey",
+        text: `${name} connects reservations, table/room management, and billing for smoother guest experiences.`,
+      },
+      {
+        title: "Kitchen & operations",
+        text: `KOT routing, inventory, and staff coordination keep peak hours under control.`,
+      },
+      {
+        title: "Revenue analytics",
+        text: `Owners review covers, occupancy, aggregator orders, and payouts from one dashboard.`,
+      },
+    ],
+    mobility: [
+      {
+        title: "On-demand bookings",
+        text: `${name} powers customer apps, driver/provider apps, and dispatch with live GPS and fare rules.`,
+      },
+      {
+        title: "Fleet payouts",
+        text: `Wallets, incentives, settlements, and trip analytics help operators scale city by city.`,
+      },
+      {
+        title: "Safety & compliance",
+        text: `SOS flows, trip logs, and partner onboarding tools built for regulated mobility businesses.`,
+      },
+    ],
+    fintech: [
+      {
+        title: "Regulated onboarding",
+        text: `${name} implements KYC, limits, and sponsor-bank aligned journeys with full audit trails.`,
+      },
+      {
+        title: "Core ledger & APIs",
+        text: `Transaction engine, reconciliation, and partner consoles designed for NBFCs, wallets, and agents.`,
+      },
+      {
+        title: "Risk & reporting",
+        text: `Fraud hooks, regulatory exports, and ops dashboards keep compliance teams confident.`,
+      },
+    ],
+    portal: [
+      {
+        title: "Content & community",
+        text: `${name} scales publishing, moderation, search, and monetization for growing audiences.`,
+      },
+      {
+        title: "User accounts",
+        text: `Profiles, payments, notifications, and partner APIs without rebuilding from scratch each launch.`,
+      },
+      {
+        title: "Traffic spikes",
+        text: `Architecture tested for campaign traffic with CDN, caching, and observability baked in.`,
+      },
+    ],
+    enterprise: [
+      {
+        title: "Department workflows",
+        text: `${name} digitizes approvals, master data, and operational transactions for ${profile.audience}.`,
+      },
+      {
+        title: "Integrations",
+        text: `Email, SMS, accounting, and legacy Excel migrations handled in phased rollouts.`,
+      },
+      {
+        title: "Executive reporting",
+        text: `Management dashboards and exports replace manual MIS compiled every month.`,
+      },
+    ],
+    gov: [
+      {
+        title: "Scheme delivery",
+        text: `${name} registers beneficiaries, runs verification chains, and tracks disbursements with audit logs.`,
+      },
+      {
+        title: "Field operations",
+        text: `District pilots with offline-friendly flows before statewide rollout and training.`,
+      },
+      {
+        title: "Leadership MIS",
+        text: `Geo and demographic dashboards for reviews, exports, and accountability.`,
+      },
+    ],
+    general: [
+      {
+        title: "Operations digitization",
+        text: `${name} replaces manual spreadsheets with workflows your ${profile.audience} actually use daily.`,
+      },
+      {
+        title: "Customer-facing touchpoints",
+        text: `Web portals and optional mobile apps aligned with your brand and support team.`,
+      },
+      {
+        title: "Measurable launch",
+        text: `Weekly demos, written scope, and post-go-live AMC so you always know project status.`,
+      },
+    ],
+  };
+  return templates[profileKey] ?? templates.general;
+}
+
+function buildIntro(item, profile) {
+  const tagPhrase =
+    item.tags?.length > 0
+      ? `Core capabilities include ${item.tags.slice(0, 3).join(", ")} — all tailored to how your team works.`
+      : "";
+  return {
+    title: `${item.title} built around your workflow`,
+    paragraphs: [
+      `${item.tagline}. ${item.desc}`,
+      `We design ${item.title} for ${profile.audience} who need ${profile.focus}. ${tagPhrase}`.trim(),
+      `ANILAX SOFTWARE PRIVATE LIMITED delivers milestone-based builds with weekly demos, written scope, and post-launch support from Jaipur — so you are never guessing what ships next.`,
+    ],
+  };
+}
+
+function buildSteps(item, profile) {
+  return [
+    { title: "Discover", text: `${profile.step1} — specific to ${item.title} and your operating model.` },
+    {
+      title: "Design",
+      text: `Wireframes and UI for ${item.title} covering ${(item.tags ?? []).slice(0, 2).join(" & ") || "core modules"} — you sign off before production code.`,
+    },
+    { title: "Develop", text: profile.step3 },
+    { title: "Test", text: `${profile.step4} Scenarios include ${item.tagline.toLowerCase()}.` },
+    { title: "Launch", text: profile.step5 },
+  ];
+}
+
+function buildFaq(item, profileKey) {
+  const name = item.title;
+  const base = [
+    {
+      q: `Can you customize ${name} for our exact process?`,
+      a: `Yes. We map your SOPs, approvals, and integrations into ${name} — not a generic demo with your logo pasted on.`,
+    },
+    {
+      q: `What is included in a typical ${name} project?`,
+      a: `Admin panel, core modules from your scope, deployment docs, training, and optional mobile apps — all listed in a written milestone plan before build starts.`,
+    },
+    {
+      q: "Do you provide source code and deployment access?",
+      a: "Yes, as per contract. You receive repositories, environment setup, and handover sessions so your team can operate independently.",
+    },
+    {
+      q: "How long does implementation take?",
+      a: "Most projects run 8–12 weeks after UX approval; payment, fintech, and compliance-heavy scopes may need longer discovery.",
+    },
+  ];
+  if (profileKey === "payment" || profileKey === "fintech") {
+    base.push({
+      q: "Can you integrate banks, gateways, or NPCI rails?",
+      a: "Yes — sandbox first, then production with reconciliation, webhooks, and sponsor-bank checklists.",
+    });
+  }
+  if (profileKey === "healthcare" || profileKey === "education") {
+    base.push({
+      q: "How do you handle sensitive data?",
+      a: "Role-based access, encrypted secrets, backups, and audit logs — with consent-aware workflows for regulated domains.",
+    });
+  }
+  base.push({
+    q: "How do we start?",
+    a: "Share your requirement via Connect With Us — we respond within 1–2 business days with next steps and a ballpark plan.",
+  });
+  return base;
+}
+
+function buildTimelineNote(item, profileKey) {
+  const heavy = ["payment", "fintech", "healthcare", "gov"].includes(profileKey);
+  return heavy
+    ? `${item.title} timelines depend on compliance, integrations, and UAT with real users — we quote after discovery.`
+    : `Exact duration for ${item.title} depends on modules and integrations — we quote after discovery.`;
 }
 
 export function getSoftwareProduct(id) {
@@ -228,28 +535,17 @@ export function getSoftwareProduct(id) {
   return {
     ...item,
     profileKey,
-    heroBadge: "Fixed scope · Weekly demos · Post-launch support",
-    safeIntro: {
-      title: "You're partnering with a team that ships responsibly",
-      paragraphs: [
-        `${productName} is not a generic template sold blindly — we study how your ${profile.audience} actually work, then design software around your rules, brand, and growth plan.`,
-        `Our focus for this product is ${profile.focus}. You get clear documentation, milestone-based delivery, and direct access to engineers — so you always know what's being built and why.`,
-        `ANILAX SOFTWARE PRIVATE LIMITED has delivered 120+ products since 2021. Your code, data policies, and go-live checklist are agreed in writing before development starts.`,
-      ],
-    },
+    heroBadge: `${item.tags?.[0] ?? "Custom"} · Fixed scope · Weekly demos`,
+    highlights: buildHighlights(item),
+    useCases: buildUseCases(item, profile, profileKey),
+    safeIntro: buildIntro(item, profile),
     howWeBuild: {
       title: `How we build your ${productName}`,
-      subtitle: "A transparent process — no surprises, no black box.",
-      steps: [
-        { title: "Discover", text: profile.step1 },
-        { title: "Design", text: `Wireframes and UI for ${productName} — you sign off before we write production code.` },
-        { title: "Develop", text: profile.step3 },
-        { title: "Test", text: profile.step4 },
-        { title: "Launch", text: profile.step5 },
-      ],
+      subtitle: `${productName} — transparent delivery from discovery to go-live.`,
+      steps: buildSteps(item, profile),
     },
     deliverables: {
-      title: "What you receive",
+      title: `What you receive with ${productName}`,
       items: buildModules(item, profile),
     },
     trust: {
@@ -257,7 +553,7 @@ export function getSoftwareProduct(id) {
       items: [
         {
           title: "Written scope & timelines",
-          text: "Milestones, payment schedules, and change-request process are documented before build starts.",
+          text: `Milestones for ${productName}, payment schedules, and change-request process are documented before build starts.`,
         },
         {
           title: "Security-first engineering",
@@ -277,18 +573,13 @@ export function getSoftwareProduct(id) {
         },
         {
           title: "Training & documentation",
-          text: "Admin manuals, video walkthroughs, and handover sessions so your staff is confident on day one.",
+          text: `Admin manuals and walkthroughs for ${productName} so your staff is confident on day one.`,
         },
       ],
     },
     stack: {
-      title: "Technology & quality",
-      items: [
-        "React / Next.js frontends · Node.js APIs · PostgreSQL or MongoDB",
-        "React Native or Flutter for mobile when required",
-        "Cloud hosting (AWS / GCP / Azure) with staging + production",
-        "Automated backups, error monitoring, and release checklists",
-      ],
+      title: `Technology for ${productName}`,
+      items: STACK_BY_PROFILE[profileKey] ?? STACK_BY_PROFILE.general,
     },
     timeline: {
       title: "Typical timeline",
@@ -298,26 +589,9 @@ export function getSoftwareProduct(id) {
         { phase: "Week 9–10", label: "QA, UAT, and fixes" },
         { phase: "Week 11+", label: "Go-live + hypercare support" },
       ],
-      note: "Exact duration depends on modules, integrations, and compliance needs — we quote after discovery.",
+      note: buildTimelineNote(item, profileKey),
     },
-    faq: [
-      {
-        q: `Can you customize ${productName} for our exact process?`,
-        a: "Yes. We start from your workflows, not a one-size-fits-all demo. Custom fields, approvals, and integrations are part of scope.",
-      },
-      {
-        q: "Do you provide source code?",
-        a: "Yes, as per agreement. You receive repositories, deployment docs, and environment setup guidance.",
-      },
-      {
-        q: "What if we already have partial software?",
-        a: "We can migrate data, integrate APIs, or replace modules in phases to reduce risk.",
-      },
-      {
-        q: "How do we start?",
-        a: "Share your requirement via Connect With Us — we respond within 1–2 business days with next steps and a ballpark plan.",
-      },
-    ],
+    faq: buildFaq(item, profileKey),
   };
 }
 

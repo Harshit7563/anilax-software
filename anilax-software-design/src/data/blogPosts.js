@@ -6,7 +6,7 @@ export const BLOG_HERO = {
     "66+ detailed software guides plus AePS, API, and fintech insights — written by the Anilax team for partners building in India.",
 };
 
-import { SOFTWARE_BLOG_POSTS } from "./softwareBlogPosts";
+import { SOFTWARE_BLOG_POSTS } from "./softwareBlogPosts.js";
 
 export const BLOG_CATEGORIES = ["All", "AePS", "APIs", "Product", "Industry", "Software"];
 

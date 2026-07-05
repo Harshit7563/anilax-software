@@ -28,7 +28,7 @@ Output: `dist/` (static files for Nginx / Hostinger).
 Set in `.env`:
 
 ```env
-VITE_API_URL=https://yourdomain.com
+Production: set `VITE_API_URL=https://anilaxsoftware.com` on Hostinger. See `HOSTINGER.md` for Gemini + deploy steps.
 ```
 
 Leave empty if the API is on the same domain under `/api` (Nginx proxy).

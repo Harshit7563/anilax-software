@@ -74,6 +74,49 @@ function FactsBlock({ block }) {
   );
 }
 
+function TableBlock({ block }) {
+  return (
+    <section className="site-block">
+      <h2 className="site-block__title">{block.heading}</h2>
+      <div className="site-table-wrap">
+        <table className="site-table">
+          <thead>
+            <tr>
+              {block.columns.map((col) => (
+                <th key={col}>{col}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {block.rows.map((row) => (
+              <tr key={row.join("-")}>
+                {row.map((cell) => (
+                  <td key={cell}>{cell}</td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  );
+}
+
+function LegalSummaryBlock({ block }) {
+  return (
+    <section className="site-block site-block--legal-summary">
+      <div className="legal-summary">
+        {block.items.map((item) => (
+          <div key={item.label} className="legal-summary__item">
+            <span className="legal-summary__label">{item.label}</span>
+            <span className="legal-summary__value">{item.value}</span>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
 function JobsBlock({ block }) {
   return (
     <section className="site-block">
@@ -147,13 +190,37 @@ function ContactBlock({ block }) {
   );
 }
 
+function LegalSectionContent({ section }) {
+  return (
+    <>
+      {section.body && <p>{section.body}</p>}
+      {section.paragraphs?.map((p) => (
+        <p key={p}>{p}</p>
+      ))}
+      {section.list && (
+        <ul className="site-legal-list">
+          {section.list.map((item) => (
+            <li key={item}>{item}</li>
+          ))}
+        </ul>
+      )}
+      {section.subsections?.map((sub) => (
+        <div key={sub.title} className="site-legal-sub">
+          <h3>{sub.title}</h3>
+          <p>{sub.text}</p>
+        </div>
+      ))}
+    </>
+  );
+}
+
 function LegalBlock({ block }) {
   return (
     <section className="site-block site-block--legal">
       {block.sections.map((sec) => (
-        <article key={sec.title} className="site-legal-section">
+        <article key={sec.id || sec.title} id={sec.id} className="site-legal-section">
           <h2>{sec.title}</h2>
-          <p>{sec.body}</p>
+          <LegalSectionContent section={sec} />
         </article>
       ))}
     </section>
@@ -172,6 +239,10 @@ function PageBlock({ block }) {
       return <StatsBlock block={block} />;
     case "facts":
       return <FactsBlock block={block} />;
+    case "table":
+      return <TableBlock block={block} />;
+    case "legal-summary":
+      return <LegalSummaryBlock block={block} />;
     case "jobs":
       return <JobsBlock block={block} />;
     case "contact":
@@ -183,20 +254,68 @@ function PageBlock({ block }) {
   }
 }
 
+function collectLegalToc(blocks) {
+  const items = [];
+  blocks.forEach((block) => {
+    if (block.type !== "legal") return;
+    block.sections.forEach((sec) => {
+      if (sec.id) {
+        items.push({ id: sec.id, label: sec.title });
+      }
+    });
+  });
+  return items;
+}
+
 export function SitePageLayout({ page }) {
+  const isLegal = page.layout === "legal";
+  const toc = isLegal ? collectLegalToc(page.blocks) : [];
+
   return (
-    <div className="site-page">
-      <section className="site-hero">
+    <div className={`site-page ${isLegal ? "site-page--legal" : ""}`}>
+      <section className={`site-hero ${isLegal ? "site-hero--legal" : ""}`}>
         <div className="site-hero__bg" aria-hidden="true" />
         <p className="site-hero__eyebrow">{page.eyebrow}</p>
         <h1 className="site-hero__title">{page.title}</h1>
         <p className="site-hero__sub">{page.subtitle}</p>
+        {isLegal && page.effectiveDate && (
+          <p className="site-hero__meta">
+            Effective date: {page.effectiveDate} · {page.slug && `/${page.slug}`}
+          </p>
+        )}
       </section>
 
-      <div className="site-content">
-        {page.blocks.map((block, i) => (
-          <PageBlock key={`${block.type}-${i}`} block={block} />
-        ))}
+      {isLegal && page.relatedLinks?.length > 0 && (
+        <nav className="legal-nav" aria-label="Legal documents">
+          <div className="legal-nav__inner">
+            {page.relatedLinks.map((link) => (
+              <Link key={link.to} to={link.to} className="legal-nav__link">
+                {link.label}
+              </Link>
+            ))}
+          </div>
+        </nav>
+      )}
+
+      <div className={`site-content ${isLegal ? "site-content--legal" : ""}`}>
+        {isLegal && toc.length > 0 && (
+          <aside className="legal-toc" aria-label="Table of contents">
+            <p className="legal-toc__title">On this page</p>
+            <ol className="legal-toc__list">
+              {toc.map((item) => (
+                <li key={item.id}>
+                  <a href={`#${item.id}`}>{item.label}</a>
+                </li>
+              ))}
+            </ol>
+          </aside>
+        )}
+
+        <div className="site-content__main">
+          {page.blocks.map((block, i) => (
+            <PageBlock key={`${block.type}-${i}`} block={block} />
+          ))}
+        </div>
       </div>
 
       {page.cta && (

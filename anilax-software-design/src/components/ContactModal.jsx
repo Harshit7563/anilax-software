@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useContactModal } from "../context/ContactModalContext";
-import { COMPANY_PHONE, COMPANY_PHONE_TEL } from "../data/company";
+import { COMPANY_PHONE, COMPANY_PHONE_TEL, COMPANY_EMAIL } from "../data/company";
 import { formStateFromPrefill } from "../lib/contactPrefill";
 import { submitContactLead } from "../lib/siteApi";
 import "../styles/contact-modal.css";
@@ -167,6 +167,11 @@ export function ContactModal() {
                 <span className="contact-modal__phone-label">Prefer a call?</span>
                 <strong>{COMPANY_PHONE}</strong>
                 <span className="contact-modal__phone-cta">Tap to dial →</span>
+              </a>
+              <a href={`mailto:${COMPANY_EMAIL}`} className="contact-modal__phone-card contact-modal__email-card">
+                <span className="contact-modal__phone-label">Or email us</span>
+                <strong>{COMPANY_EMAIL}</strong>
+                <span className="contact-modal__phone-cta">Tap to send →</span>
               </a>
             </aside>
 

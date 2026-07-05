@@ -3,7 +3,9 @@ import { ConnectButton } from "../components/ConnectButton";
 import {
   COMPANY_LEGAL,
   COMPANY_OFFICE,
+  COMPANY_PHONE,
   COMPANY_PHONE_TEL,
+  COMPANY_EMAIL,
   COMPANY_HERO,
   COMPANY_MISSION,
   COMPANY_STATS,
@@ -72,10 +74,10 @@ export function CompanyPage() {
               </div>
             ))}
             <div className="company-quick-links">
+              <Link to="/services">Services →</Link>
+              <Link to="/software">Software catalog →</Link>
+              <Link to="/industries">Industries →</Link>
               <Link to="/stories">Our Stories →</Link>
-              <Link to="/b2b">B2B →</Link>
-              <Link to="/api">API →</Link>
-              <Link to="/software">Software →</Link>
               <Link to="/technology">Technology →</Link>
             </div>
           </div>
@@ -123,6 +125,12 @@ export function CompanyPage() {
                 </span>
               ))}
             </address>
+            <p className="company-contact-line">
+              <a href={`tel:${COMPANY_PHONE_TEL}`}>{COMPANY_PHONE}</a>
+            </p>
+            <p className="company-contact-line">
+              <a href={`mailto:${COMPANY_EMAIL}`}>{COMPANY_EMAIL}</a>
+            </p>
             <a
               href="https://maps.google.com/?q=Mall+of+Jaipur+Vaishali+Nagar+Jaipur"
               target="_blank"
@@ -194,6 +202,9 @@ export function CompanyPage() {
             <ConnectButton className="btn btn--gradient btn--connect" />
             <a href={`tel:${COMPANY_PHONE_TEL}`} className="btn btn--ghost btn--ghost-dark">
               Call us
+            </a>
+            <a href={`mailto:${COMPANY_EMAIL}`} className="btn btn--ghost btn--ghost-dark">
+              Email us
             </a>
           </div>
         </div>

@@ -1,5 +1,5 @@
-import { PAYMENT_SOLUTIONS, BUSINESS_SOLUTIONS } from "./softwareServices";
-import { PRODUCT_EXTRA_MODULES } from "./softwareBlogModules";
+import { PAYMENT_SOLUTIONS, BUSINESS_SOLUTIONS } from "./softwareServices.js";
+import { PRODUCT_EXTRA_MODULES } from "./softwareBlogModules.js";
 
 const DELIVERY_BULLETS = [
   "Discovery workshop to map your current process and must-have screens",

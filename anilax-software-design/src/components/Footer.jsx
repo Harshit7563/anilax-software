@@ -1,18 +1,12 @@
 import { Link } from "react-router-dom";
-import { ConnectButton } from "./ConnectButton";
-import { COMPANY_LEGAL, COMPANY_PHONE, COMPANY_PHONE_TEL } from "../data/company";
+import { Logo } from "./Logo";
+import { COMPANY_LEGAL, COMPANY_EMAIL, COMPANY_PHONE, COMPANY_PHONE_TEL } from "../data/company";
 import { FOOTER_ROUTES, FOOTER_LINK_GROUPS } from "../data/footerLinks";
 
 export function Footer() {
   return (
     <footer className="footer">
-      <div className="footer__inner">
-        <div className="footer__cta">
-          <h2>
-            Ready to <span className="gradient">move business</span>?
-          </h2>
-          <ConnectButton className="btn btn--gradient btn--connect" />
-        </div>
+      <div className="footer__inner dw-container">
         <div className="footer__grid">
           {Object.entries(FOOTER_LINK_GROUPS).map(([heading, items]) => (
             <div key={heading} className="footer__col">
@@ -27,9 +21,7 @@ export function Footer() {
         </div>
         <div className="footer__bottom">
           <div className="footer__bottom-left">
-            <Link to="/" className="logo footer__brand">
-              ANILAX SOFTWARE PRIVATE LIMITED
-            </Link>
+            <Logo variant="footer" className="footer__brand" />
             <div className="footer__office">
               <h4>Office</h4>
               <address>
@@ -41,6 +33,9 @@ export function Footer() {
               </address>
               <p className="footer__phone">
                 <a href={`tel:${COMPANY_PHONE_TEL}`}>{COMPANY_PHONE}</a>
+              </p>
+              <p className="footer__email">
+                <a href={`mailto:${COMPANY_EMAIL}`}>{COMPANY_EMAIL}</a>
               </p>
             </div>
           </div>

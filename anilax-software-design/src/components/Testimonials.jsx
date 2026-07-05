@@ -1,25 +1,42 @@
-const QUOTES = [
-  { text: "Anilax cut our payout integration from months to two weeks.", cite: "FinOps Lead, Series B SaaS" },
-  { text: "The API docs and sandbox are the best we have used in Indian fintech.", cite: "CTO, Consumer super-app" },
-  { text: "B2B treasury and B2C wallets on one stack — finally.", cite: "Head of Product, Neobank" },
-  { text: "Compliance-ready infrastructure without hiring a 20-person payments team.", cite: "CEO, Lending startup" },
-  { text: "Webhooks and ledger APIs that actually make sense.", cite: "Staff Engineer, Marketplace" },
-  { text: "We launched wallets for 500K users in under 30 days.", cite: "VP Engineering, Retail brand" },
-];
+import { Link } from "react-router-dom";
+import { HOME_TESTIMONIALS } from "../data/homePage";
 
 export function Testimonials() {
-  const doubled = [...QUOTES, ...QUOTES];
-
   return (
-    <section className="testimonials">
-      <p className="testimonials__title">Trusted by teams building the future of money</p>
-      <div className="marquee" aria-hidden="true">
-        {doubled.map((q, i) => (
-          <blockquote key={`${q.cite}-${i}`} className="quote-card">
-            <p>&ldquo;{q.text}&rdquo;</p>
-            <cite>— {q.cite}</cite>
+    <section className="dw-testimonials">
+      <div className="dw-container">
+        <div className="dw-testimonials__header">
+        <p className="dw-eyebrow">Client Feedback</p>
+        <h2 className="dw-heading">Here&apos;s what our business partners say about us</h2>
+      </div>
+      <div className="dw-testimonials__featured">
+        <div className="dw-testimonials__featured-copy">
+          <span className="dw-testimonials__badge">Client Story</span>
+          <h3>We reduced manual workload by 60% in 2 months</h3>
+          <p>
+            See how Anilax automated complex AePS workflows for a regional BC network — helping
+            their team save 20+ hours every week and focus on growth.
+          </p>
+        </div>
+        <Link to="/stories" className="dw-link-arrow">
+          Watch how it works →
+        </Link>
+      </div>
+      <div className="dw-testimonials__grid">
+        {HOME_TESTIMONIALS.map((item) => (
+          <blockquote key={item.name + item.role} className="dw-testimonial-card">
+            <p>&ldquo;{item.quote}&rdquo;</p>
+            <footer>
+              <strong>{item.name}</strong>
+              <span>{item.role}</span>
+              <em>{item.highlight}</em>
+            </footer>
           </blockquote>
         ))}
+      </div>
+      <Link to="/stories" className="dw-link-arrow dw-testimonials__more">
+        Explore more client success stories →
+      </Link>
       </div>
     </section>
   );

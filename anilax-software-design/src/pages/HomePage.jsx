@@ -1,29 +1,27 @@
 import { Hero } from "../components/Hero";
-import { Pillars } from "../components/Pillars";
-import { PartnerTrust } from "../components/PartnerTrust";
-import { PlatformDemo } from "../components/PlatformDemo";
+import { ServiceSolutions } from "../components/ServiceSolutions";
+import { StatsBar } from "../components/StatsBar";
+import { CaseStudies } from "../components/CaseStudies";
+import { IndustriesSection } from "../components/IndustriesSection";
 import { Workflow } from "../components/Workflow";
-import { Segments } from "../components/Segments";
-import { ApiTeaser } from "../components/ApiTeaser";
+import { TechServices } from "../components/TechServices";
 import { Testimonials } from "../components/Testimonials";
-import { Trust } from "../components/Trust";
-import { CTACards } from "../components/CTACards";
 import { FAQ } from "../components/FAQ";
+import { ContactSection } from "../components/ContactSection";
 
 export function HomePage() {
   return (
     <>
       <Hero />
-      <Pillars />
-      <PartnerTrust />
-      <PlatformDemo />
+      <ServiceSolutions />
+      <StatsBar />
+      <CaseStudies />
+      <IndustriesSection />
       <Workflow />
-      <Segments />
-      <ApiTeaser />
+      <TechServices />
       <Testimonials />
-      <Trust />
-      <CTACards />
       <FAQ />
+      <ContactSection />
     </>
   );
 }

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { ConnectButton } from "../components/ConnectButton";
+import { SoftwareProductIcon } from "../components/icons/catalogIcons";
 import { useContactModal } from "../context/ContactModalContext";
 import {
   SOFTWARE_HERO,
@@ -39,9 +40,9 @@ export function SoftwarePage() {
           <Link to={SOFTWARE_HERO.ctaPrimary.href} className="btn btn--gradient">
             {SOFTWARE_HERO.ctaPrimary.label}
           </Link>
-          <a href={SOFTWARE_HERO.ctaSecondary.href} className="btn btn--ghost btn--ghost-dark">
+          <Link to={SOFTWARE_HERO.ctaSecondary.href} className="btn btn--ghost btn--ghost-dark">
             {SOFTWARE_HERO.ctaSecondary.label}
-          </a>
+          </Link>
         </div>
         <div className="software-hero__stats">
           {SOFTWARE_STATS.map((s) => (
@@ -85,7 +86,7 @@ export function SoftwarePage() {
                   className={`software-card software-card--payment ${i === 0 ? "software-card--featured" : ""}`}
                   style={{ animationDelay: `${i * 0.06}s` }}
                 >
-                  <span className="software-card__icon">{item.icon}</span>
+                  <SoftwareProductIcon id={item.id} size="md" className="software-card__icon" />
                   <div className="software-card__tags">
                     {item.tags.map((t) => (
                       <span key={t} className="software-card__tag">
@@ -136,7 +137,7 @@ export function SoftwarePage() {
                   className="software-card software-card--business"
                   style={{ animationDelay: `${i * 0.04}s` }}
                 >
-                  <span className="software-card__icon">{item.icon}</span>
+                  <SoftwareProductIcon id={item.id} size="md" className="software-card__icon" />
                   <h3>{item.title}</h3>
                   <p className="software-card__tagline">{item.tagline}</p>
                   <p className="software-card__desc">{item.desc}</p>

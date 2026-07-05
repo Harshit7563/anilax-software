@@ -2,11 +2,13 @@ import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import {
   adminLogout,
+  fetchAdminBlogPosts,
   fetchAdminStats,
   fetchContactLeads,
   fetchPartnerSignups,
   updateLeadStatus,
 } from "../../lib/adminApi";
+import { AdminBlogPanel } from "./AdminBlogPanel";
 import "../../styles/admin.css";
 
 const LEAD_STATUSES = [
@@ -28,11 +30,12 @@ function formatDate(iso) {
 }
 
 export function AdminDashboardPage() {
-  const [tab, setTab] = useState("leads");
+  const [tab, setTab] = useState("queries");
   const [stats, setStats] = useState(null);
   const [leadFilter, setLeadFilter] = useState("all");
   const [leads, setLeads] = useState({ items: [], total: 0 });
   const [signups, setSignups] = useState({ items: [], total: 0 });
+  const [blogs, setBlogs] = useState({ items: [], total: 0 });
   const [selectedLead, setSelectedLead] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -41,16 +44,18 @@ export function AdminDashboardPage() {
     setLoading(true);
     setError("");
     try {
-      const [s, l, p] = await Promise.all([
+      const [s, l, p, b] = await Promise.all([
         fetchAdminStats(),
         fetchContactLeads({ status: leadFilter }),
         fetchPartnerSignups(),
+        fetchAdminBlogPosts(),
       ]);
       setStats(s);
       setLeads(l);
       setSignups(p);
+      setBlogs(b);
     } catch (err) {
-      setError(err.message ?? "Failed to load data");
+      setError(err.message ?? "Failed to load data. Is the API server running?");
     } finally {
       setLoading(false);
     }
@@ -107,19 +112,19 @@ export function AdminDashboardPage() {
         <div className="admin-stats">
           <article className="admin-stat">
             <strong>{stats?.contact_new ?? "—"}</strong>
-            <span>New leads</span>
+            <span>New queries</span>
           </article>
           <article className="admin-stat">
             <strong>{stats?.contact_total ?? "—"}</strong>
-            <span>Total leads</span>
+            <span>Total queries</span>
           </article>
           <article className="admin-stat">
-            <strong>{stats?.signup_total ?? "—"}</strong>
-            <span>Signups / logins</span>
+            <strong>{stats?.blog_total ?? "—"}</strong>
+            <span>Blog posts</span>
           </article>
           <article className="admin-stat">
             <strong>{stats?.signup_week ?? "—"}</strong>
-            <span>Last 7 days</span>
+            <span>Signups (7 days)</span>
           </article>
         </div>
 
@@ -127,10 +132,10 @@ export function AdminDashboardPage() {
           <button
             type="button"
             role="tab"
-            className={tab === "leads" ? "admin-tabs__btn--active" : ""}
-            onClick={() => setTab("leads")}
+            className={tab === "queries" ? "admin-tabs__btn--active" : ""}
+            onClick={() => setTab("queries")}
           >
-            Contact leads ({leads.total})
+            Customer queries ({leads.total})
           </button>
           <button
             type="button"
@@ -140,9 +145,17 @@ export function AdminDashboardPage() {
           >
             Partner signups ({signups.total})
           </button>
+          <button
+            type="button"
+            role="tab"
+            className={tab === "blog" ? "admin-tabs__btn--active" : ""}
+            onClick={() => setTab("blog")}
+          >
+            Blog ({blogs.total})
+          </button>
         </div>
 
-        {tab === "leads" && (
+        {tab === "queries" && (
           <section className="admin-panel">
             <div className="admin-panel__toolbar">
               <label className="admin-filter">
@@ -179,7 +192,7 @@ export function AdminDashboardPage() {
                   ) : leads.items.length === 0 ? (
                     <tr>
                       <td colSpan={6} className="admin-table__empty">
-                        No leads yet
+                        No customer queries yet
                       </td>
                     </tr>
                   ) : (
@@ -274,10 +287,19 @@ export function AdminDashboardPage() {
             </div>
           </section>
         )}
+
+        {tab === "blog" && (
+          <AdminBlogPanel
+            posts={blogs}
+            loading={loading}
+            onRefresh={load}
+            onError={setError}
+          />
+        )}
       </main>
 
       {selectedLead && (
-        <div className="admin-drawer" role="dialog" aria-modal="true" aria-label="Lead details">
+        <div className="admin-drawer" role="dialog" aria-modal="true" aria-label="Query details">
           <button
             type="button"
             className="admin-drawer__backdrop"
@@ -329,7 +351,7 @@ export function AdminDashboardPage() {
               )}
               <dt>Submitted</dt>
               <dd>{formatDate(selectedLead.created_at)}</dd>
-              <dt>Requirement</dt>
+              <dt>Requirement / message</dt>
               <dd className="admin-detail__requirement">{selectedLead.requirement}</dd>
             </dl>
           </div>

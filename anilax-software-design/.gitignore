@@ -4,3 +4,10 @@ dist
 .env.local
 .DS_Store
 *.log
+android/.gradle
+android/app/build
+android/build
+android/local.properties
+*.apk
+!android/app/build/outputs/apk/debug/.gitkeep
+server/data/

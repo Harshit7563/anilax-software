@@ -1,10 +1,8 @@
+import { useEffect, useState } from "react";
 import { Link, Navigate, useParams } from "react-router-dom";
 import { ConnectButton } from "../components/ConnectButton";
-import {
-  formatBlogDate,
-  getBlogPost,
-  getRelatedPosts,
-} from "../data/blogPosts";
+import { formatBlogDate, getRelatedPosts } from "../data/blogPosts";
+import { fetchBlogPost } from "../lib/blogApi";
 import "../styles/blog.css";
 
 function BlogSection({ section }) {
@@ -25,7 +23,32 @@ function BlogSection({ section }) {
 
 export function BlogPostPage() {
   const { slug } = useParams();
-  const post = getBlogPost(slug);
+  const [post, setPost] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let active = true;
+    setLoading(true);
+    fetchBlogPost(slug).then((data) => {
+      if (active) {
+        setPost(data);
+        setLoading(false);
+      }
+    });
+    return () => {
+      active = false;
+    };
+  }, [slug]);
+
+  if (loading) {
+    return (
+      <div className="blog-page blog-page--article">
+        <p className="blog-hero__sub" style={{ padding: "3rem 1.5rem" }}>
+          Loading article…
+        </p>
+      </div>
+    );
+  }
 
   if (!post) {
     return <Navigate to="/blog" replace />;
@@ -50,7 +73,7 @@ export function BlogPostPage() {
           <h1>{post.title}</h1>
           <p className="blog-article__lead">{post.excerpt}</p>
           <div className="blog-article__tags">
-            {post.tags.map((tag) => (
+            {(post.tags ?? []).map((tag) => (
               <span key={tag} className="blog-article__tag">
                 {tag}
               </span>
@@ -60,7 +83,7 @@ export function BlogPostPage() {
 
         <div className="blog-article__body">
           <div className="blog-article__content">
-            {post.sections.map((section, i) => (
+            {(post.sections ?? []).map((section, i) => (
               <BlogSection key={`${section.type}-${i}`} section={section} />
             ))}
           </div>

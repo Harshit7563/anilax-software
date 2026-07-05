@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { COMPANY_API_V1 } from "../data/company";
 
 const TABS = {
   fintech: {
@@ -80,7 +81,7 @@ export function PlatformDemo() {
           <div className="demo-body" role="tabpanel">
             {data.code ? (
               <pre className="api-panel">
-                <code>{`curl https://api.anilaxpayments.com/v1/payments \\
+                <code>{`curl ${COMPANY_API_V1}/payments \\
   -H "Authorization: Bearer sk_live_..." \\
   -d '{
     "amount": 50000,

@@ -1,41 +1,18 @@
 import { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Logo } from "./Logo";
-import { SITE_PAGE_SLUGS } from "../data/sitePages";
+import { MobileMegaSection, NavMegaPanel, NavMegaTrigger } from "./NavMegaDropdown";
+import { isMegaMenuActive, NAV_MEGA_MENUS, NAV_SIMPLE_LINKS } from "../data/navMegaMenus";
 
-const NAV = [
-  { label: "Fintech", to: { pathname: "/", hash: "#fintech" } },
-  { label: "B2B", to: "/b2b" },
-  { label: "B2C", to: "/b2c" },
-  { label: "API", to: "/api" },
-  { label: "Software", to: "/software" },
-  { label: "Technology", to: "/technology" },
-  { label: "Company", to: "/company" },
-  { label: "Stories", to: "/stories" },
-  { label: "Blog", to: "/blog" },
-];
+function isNavActive(item, pathname) {
+  const to = typeof item.to === "string" ? item.to : item.to.pathname;
+  if (to === "/") return pathname === "/";
+  return pathname === to || pathname.startsWith(`${to}/`);
+}
 
-function NavItem({ item, isHome, pathname, onNavigate, className = "" }) {
-  const isHashLink = typeof item.to === "object" && item.to.hash;
-  const pathOnly = typeof item.to === "string" ? item.to : item.to.pathname;
-  const isActive = !isHashLink && pathname === pathOnly;
+function NavItem({ item, pathname, onNavigate, className = "" }) {
+  const isActive = isNavActive(item, pathname);
   const linkClass = [className, isActive && "nav-active"].filter(Boolean).join(" ");
-
-  if (isHashLink) {
-    return (
-      <Link to={item.to} className={linkClass || undefined} onClick={onNavigate}>
-        {item.label}
-      </Link>
-    );
-  }
-
-  if (typeof item.to === "string" && item.to.startsWith("/#")) {
-    return (
-      <Link to={{ pathname: "/", hash: item.to.slice(1) }} className={linkClass || undefined} onClick={onNavigate}>
-        {item.label}
-      </Link>
-    );
-  }
 
   return (
     <Link to={item.to} className={linkClass || undefined} onClick={onNavigate}>
@@ -46,114 +23,120 @@ function NavItem({ item, isHome, pathname, onNavigate, className = "" }) {
 
 export function Header() {
   const location = useLocation();
-  const isB2BPage = location.pathname === "/b2b";
-  const isB2CPage = location.pathname === "/b2c";
-  const isSoftwarePage =
-    location.pathname === "/software" || location.pathname.startsWith("/software/");
-  const isApiPage = location.pathname === "/api";
-  const isSdksPage = location.pathname === "/sdks";
-  const isTechPage = location.pathname === "/technology";
-  const isCompanyPage = location.pathname === "/company";
-  const isStoriesPage = location.pathname === "/stories";
-  const isBlogPage = location.pathname === "/blog" || location.pathname.startsWith("/blog/");
-  const slug = location.pathname.replace(/^\//, "");
-  const isSitePage = SITE_PAGE_SLUGS.includes(slug);
-  const isDarkHeroPage =
-    isB2BPage ||
-    isB2CPage ||
-    isSoftwarePage ||
-    isApiPage ||
-    isSdksPage ||
-    isTechPage ||
-    isCompanyPage ||
-    isStoriesPage ||
-    isBlogPage ||
-    isSitePage;
-  const isHome = location.pathname === "/";
-  const [theme, setTheme] = useState("dark");
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [openMenuId, setOpenMenuId] = useState(null);
+  const [mobileExpanded, setMobileExpanded] = useState({});
+
+  const openMenu = NAV_MEGA_MENUS.find((m) => m.id === openMenuId) ?? null;
 
   useEffect(() => {
-    const onScroll = () => {
-      const y = window.scrollY;
-      setScrolled(y > 20);
-      if (isDarkHeroPage) {
-        setTheme(y > 320 ? "light" : "dark");
-      } else if (isHome) {
-        setTheme(y > window.innerHeight * 0.85 ? "light" : "dark");
-      } else {
-        setTheme("light");
-      }
-    };
+    const onScroll = () => setScrolled(window.scrollY > 8);
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
-  }, [isDarkHeroPage, isHome]);
+  }, []);
 
   useEffect(() => {
-    setTheme(isDarkHeroPage ? "dark" : "dark");
     setScrolled(false);
     setMenuOpen(false);
-  }, [location.pathname, isDarkHeroPage]);
+    setOpenMenuId(null);
+    setMobileExpanded({});
+  }, [location.pathname]);
 
   useEffect(() => {
     document.body.classList.toggle("body--menu-open", menuOpen);
     return () => document.body.classList.remove("body--menu-open");
   }, [menuOpen]);
 
+  useEffect(() => {
+    document.body.classList.toggle("body--mega-open", Boolean(openMenuId));
+    return () => document.body.classList.remove("body--mega-open");
+  }, [openMenuId]);
+
+  useEffect(() => {
+    if (!openMenuId) return undefined;
+    const onKey = (e) => e.key === "Escape" && setOpenMenuId(null);
+    const onDoc = (e) => {
+      if (e.target.closest?.(".header-mega-panel, .nav-mega-btn")) return;
+      setOpenMenuId(null);
+    };
+    window.addEventListener("keydown", onKey);
+    const timer = window.setTimeout(() => document.addEventListener("click", onDoc), 0);
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      window.clearTimeout(timer);
+      document.removeEventListener("click", onDoc);
+    };
+  }, [openMenuId]);
+
   const closeMenu = () => setMenuOpen(false);
+  const closeMega = () => setOpenMenuId(null);
+
+  const openMega = (id) => {
+    setOpenMenuId(id);
+  };
+
+  const toggleMega = (e, id) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setOpenMenuId((current) => (current === id ? null : id));
+  };
+
+  const toggleMobileSection = (id) => {
+    setMobileExpanded((prev) => ({ ...prev, [id]: !prev[id] }));
+  };
 
   return (
     <>
-      <header
-        className={`header header--${theme} ${scrolled ? "header--scrolled" : ""}`}
-      >
-        <Logo />
-        <nav className="nav-desktop" aria-label="Main">
-          {NAV.map((item) => (
-            <NavItem
-              key={item.label}
-              item={item}
-              isHome={isHome}
-              pathname={location.pathname}
-            />
-          ))}
-        </nav>
-        <div className="nav-cta">
-          <Link
-            to="/login"
-            className={`btn nav-cta__keys ${theme === "dark" ? "btn--ghost btn--ghost-dark" : "btn--outline"}`}
-          >
-            Login
-          </Link>
-          <Link
-            to="/signup"
-            className={`btn nav-cta__signup ${theme === "dark" ? "btn--ghost btn--ghost-dark" : "btn--outline"}`}
-          >
-            Sign up
-          </Link>
-          <Link
-            to={{ pathname: "/", hash: "#contact" }}
-            className={`btn ${theme === "dark" ? "btn--primary-light" : "btn--primary"}`}
-            onClick={closeMenu}
-          >
-            Get started
-          </Link>
-          <button
-            type="button"
-            className={`menu-btn ${menuOpen ? "menu-btn--open" : ""}`}
-            aria-label={menuOpen ? "Close menu" : "Open menu"}
-            aria-expanded={menuOpen}
-            aria-controls="mobile-nav"
-            onClick={() => setMenuOpen((open) => !open)}
-          >
-            <span />
-            <span />
-            <span />
-          </button>
+      <header className={`header ${scrolled ? "header--scrolled" : ""}`}>
+        <div className="header__inner">
+          <Logo />
+
+          <nav className="nav-desktop" aria-label="Main">
+            {NAV_MEGA_MENUS.map((menu) => (
+              <NavMegaTrigger
+                key={menu.id}
+                menu={menu}
+                open={openMenuId === menu.id}
+                active={isMegaMenuActive(menu, location.pathname)}
+                onOpen={() => openMega(menu.id)}
+                onToggle={(e) => toggleMega(e, menu.id)}
+              />
+            ))}
+            {NAV_SIMPLE_LINKS.map((item) => (
+              <NavItem key={item.label} item={item} pathname={location.pathname} />
+            ))}
+          </nav>
+
+          <div className="nav-cta">
+            <Link to="/login" className="nav-cta__link">
+              Login
+            </Link>
+            <Link
+              to={{ pathname: "/", hash: "#contact" }}
+              className="btn btn--accent nav-cta__btn"
+              onClick={closeMenu}
+            >
+              Get Started
+            </Link>
+            <button
+              type="button"
+              className={`menu-btn ${menuOpen ? "menu-btn--open" : ""}`}
+              aria-label={menuOpen ? "Close menu" : "Open menu"}
+              aria-expanded={menuOpen}
+              aria-controls="mobile-nav"
+              onClick={() => setMenuOpen((open) => !open)}
+            >
+              <span />
+              <span />
+              <span />
+            </button>
+          </div>
         </div>
       </header>
+
+      {openMenu && <NavMegaPanel menu={openMenu} open onClose={closeMega} />}
 
       <button
         type="button"
@@ -165,16 +148,31 @@ export function Header() {
 
       <nav
         id="mobile-nav"
-        className={`nav-mobile nav-mobile--${theme} ${menuOpen ? "nav-mobile--open" : ""}`}
+        className={`nav-mobile ${menuOpen ? "nav-mobile--open" : ""}`}
         aria-label="Main mobile"
         aria-hidden={!menuOpen}
       >
+        <div className="nav-mobile__top">
+          <Logo />
+          <button type="button" className="nav-mobile__close" aria-label="Close menu" onClick={closeMenu}>
+            ×
+          </button>
+        </div>
         <div className="nav-mobile__links">
-          {NAV.map((item) => (
+          {NAV_MEGA_MENUS.map((menu) => (
+            <MobileMegaSection
+              key={menu.id}
+              menu={menu}
+              pathname={location.pathname}
+              expanded={Boolean(mobileExpanded[menu.id])}
+              onToggle={() => toggleMobileSection(menu.id)}
+              onNavigate={closeMenu}
+            />
+          ))}
+          {NAV_SIMPLE_LINKS.map((item) => (
             <NavItem
               key={item.label}
               item={item}
-              isHome={isHome}
               pathname={location.pathname}
               className="nav-mobile__link"
               onNavigate={closeMenu}
@@ -182,26 +180,11 @@ export function Header() {
           ))}
         </div>
         <div className="nav-mobile__cta">
-          <Link
-            to="/login"
-            className={`btn ${theme === "dark" ? "btn--ghost btn--ghost-dark" : "btn--outline"}`}
-            onClick={closeMenu}
-          >
+          <Link to="/login" className="btn btn--outline" onClick={closeMenu}>
             Login
           </Link>
-          <Link
-            to="/signup"
-            className={`btn ${theme === "dark" ? "btn--primary-light" : "btn--primary"}`}
-            onClick={closeMenu}
-          >
-            Sign up
-          </Link>
-          <Link
-            to={{ pathname: "/", hash: "#contact" }}
-            className={`btn ${theme === "dark" ? "btn--primary-light" : "btn--primary"}`}
-            onClick={closeMenu}
-          >
-            Get started
+          <Link to={{ pathname: "/", hash: "#contact" }} className="btn btn--accent" onClick={closeMenu}>
+            Get Started
           </Link>
         </div>
       </nav>

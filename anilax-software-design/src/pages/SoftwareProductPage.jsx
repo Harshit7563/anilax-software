@@ -1,5 +1,6 @@
 import { Link, Navigate, useParams } from "react-router-dom";
 import { ConnectButton } from "../components/ConnectButton";
+import { SoftwareProductIcon } from "../components/icons/catalogIcons";
 import { getSoftwareProduct } from "../data/softwareProductDetail";
 import "../styles/software-product.css";
 
@@ -18,7 +19,7 @@ export function SoftwareProductPage() {
         <Link to="/software#solutions" className="sw-product-back">
           ← All software solutions
         </Link>
-        <span className="sw-product-hero__icon">{product.icon}</span>
+        <SoftwareProductIcon id={product.id} size="lg" className="sw-product-hero__icon" />
         <p className="sw-product-hero__eyebrow">
           {product.category === "payment" ? "Payment solution" : "Software solution"}
         </p>
@@ -40,6 +41,37 @@ export function SoftwareProductPage() {
           </Link>
         </div>
       </section>
+
+      {product.highlights?.length > 0 && (
+        <section className="sw-product-section sw-product-section--alt">
+          <div className="sw-product-section__inner">
+            <p className="section-label">Capabilities</p>
+            <h2 className="section-title">What {product.title} delivers</h2>
+            <ul className="sw-product-checklist">
+              {product.highlights.map((line) => (
+                <li key={line}>{line}</li>
+              ))}
+            </ul>
+          </div>
+        </section>
+      )}
+
+      {product.useCases?.length > 0 && (
+        <section className="sw-product-section">
+          <div className="sw-product-section__inner">
+            <p className="section-label">Use cases</p>
+            <h2 className="section-title">Built for real operations</h2>
+            <div className="sw-product-trust-grid">
+              {product.useCases.map((uc) => (
+                <article key={uc.title} className="sw-product-trust-card">
+                  <h3>{uc.title}</h3>
+                  <p>{uc.text}</p>
+                </article>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       <section className="sw-product-safe">
         <div className="sw-product-safe__inner">

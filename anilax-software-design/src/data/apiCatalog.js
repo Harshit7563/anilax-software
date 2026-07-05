@@ -1,3 +1,5 @@
+import { COMPANY_API_V1 } from "./company";
+
 export const API_HERO = {
   eyebrow: "Anilax Software · APIs",
   title: "Every fintech API your product needs",
@@ -210,7 +212,7 @@ export const API_WEBHOOKS = [
   "settlement.credited",
 ];
 
-export const API_CODE_SAMPLE = `curl -X POST https://api.anilaxpayments.com/v1/payments \\
+export const API_CODE_SAMPLE = `curl -X POST ${COMPANY_API_V1}/payments \\
   -H "Authorization: Bearer sk_live_xxxx" \\
   -H "Idempotency-Key: ord_991_unique" \\
   -H "Content-Type: application/json" \\

@@ -7,7 +7,9 @@ export function AdminLoginPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const from = location.state?.from ?? "/admin";
+  const isNativeAdmin = import.meta.env.VITE_ADMIN_APP === "true";
 
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -26,10 +28,10 @@ export function AdminLoginPage() {
     setLoading(true);
     setError("");
     try {
-      await adminLogin(password);
+      await adminLogin(username, password);
       navigate(from, { replace: true });
     } catch (err) {
-      setError(err.message === "SESSION_EXPIRED" ? "Invalid password" : err.message);
+      setError(err.message === "SESSION_EXPIRED" ? "Invalid username or password" : err.message);
     } finally {
       setLoading(false);
     }
@@ -38,14 +40,27 @@ export function AdminLoginPage() {
   return (
     <div className="admin-login">
       <div className="admin-login__card">
-        <Link to="/" className="admin-login__back">
-          ← Back to site
-        </Link>
+        {!isNativeAdmin && (
+          <Link to="/" className="admin-login__back">
+            ← Back to site
+          </Link>
+        )}
         <p className="admin-login__eyebrow">Anilax Software</p>
         <h1>Admin</h1>
-        <p className="admin-login__sub">Sign in to view contact leads and partner signups.</p>
+        <p className="admin-login__sub">Sign in to view customer queries and manage blog posts.</p>
 
         <form onSubmit={handleSubmit}>
+          <label className="admin-field">
+            <span>Username</span>
+            <input
+              type="text"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              autoComplete="username"
+              required
+              autoFocus
+            />
+          </label>
           <label className="admin-field">
             <span>Password</span>
             <input
@@ -54,7 +69,6 @@ export function AdminLoginPage() {
               onChange={(e) => setPassword(e.target.value)}
               autoComplete="current-password"
               required
-              autoFocus
             />
           </label>
           {error && (

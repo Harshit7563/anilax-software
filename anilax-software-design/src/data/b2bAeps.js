@@ -1,6 +1,6 @@
 /** B2B AePS content — NPCI Aadhaar Enabled Payment System for partners */
 
-import { COMPANY_PHONE, COMPANY_PHONE_TEL } from "./company";
+import { COMPANY_EMAIL, COMPANY_PHONE, COMPANY_PHONE_TEL } from "./company";
 
 export const B2B_HERO = {
   eyebrow: "B2B · AePS Solutions",
@@ -330,5 +330,5 @@ export const B2B_API_CATALOG = [
 export const B2B_CONTACT_STRIP = {
   phone: COMPANY_PHONE,
   phoneTel: COMPANY_PHONE_TEL,
-  email: "sales@anilaxsoftware.com",
+  email: COMPANY_EMAIL,
 };

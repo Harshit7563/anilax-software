@@ -7,27 +7,34 @@
 }
 
 :root {
-  --bg: #f8f7f4;
-  --bg-dark: #08080a;
-  --bg-card: #111114;
-  --text: #0f0f10;
-  --text-muted: #6b6b72;
-  --text-on-dark: #f4f4f5;
+  --bg: #fafafa;
+  --bg-dark: #0f1419;
+  --bg-card: #ffffff;
+  --text: #111827;
+  --text-muted: #6b7280;
+  --text-on-dark: #f9fafb;
   --text-muted-dark: #9ca3af;
-  --border: rgba(15, 15, 16, 0.08);
+  --border: rgba(17, 24, 39, 0.08);
   --border-dark: rgba(255, 255, 255, 0.1);
-  --blue: #3b82f6;
-  --indigo: #6366f1;
-  --emerald: #10b981;
-  --cyan: #22d3ee;
-  --gradient-hero: linear-gradient(100deg, #60a5fa 0%, #34d399 55%, #a78bfa 100%);
-  --gradient-brand: linear-gradient(135deg, var(--blue), var(--indigo), var(--emerald));
+  --accent: #e85d2c;
+  --accent-hover: #d14f22;
+  --accent-soft: rgba(232, 93, 44, 0.1);
+  --blue: var(--accent);
+  --indigo: #e85d2c;
+  --emerald: #059669;
+  --cyan: var(--accent);
+  --gradient-hero: linear-gradient(135deg, #e85d2c 0%, #f97316 100%);
+  --gradient-brand: linear-gradient(135deg, #e85d2c, #f97316);
   --font-sans: "DM Sans", system-ui, sans-serif;
-  --font-display: "Syne", system-ui, sans-serif;
+  --font-display: "Plus Jakarta Sans", "DM Sans", system-ui, sans-serif;
+  --font-classic: "Libre Baskerville", Georgia, "Times New Roman", serif;
   --radius-pill: 999px;
-  --radius-lg: 16px;
-  --radius-xl: 24px;
-  --shadow: 0 24px 80px rgba(0, 0, 0, 0.1);
+  --radius-lg: 14px;
+  --radius-xl: 20px;
+  --shadow: 0 20px 60px rgba(15, 20, 25, 0.08);
+  --shadow-lg: 0 32px 80px rgba(15, 20, 25, 0.12);
+  --page-max: 1320px;
+  --page-gutter: clamp(1.25rem, 4vw, 3rem);
 }
 
 html {

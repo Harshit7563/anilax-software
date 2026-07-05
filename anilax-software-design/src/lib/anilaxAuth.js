@@ -1,22 +1,36 @@
-export const ANILAX_AUTH_URL = "https://anilaxpayments.com/auth";
+import {
+  COMPANY_AUTH_PATH,
+  COMPANY_AUTH_URL,
+  COMPANY_SITE_HOST,
+} from "../data/company";
 
-const PROTECTED_API_HOSTS = new Set([
-  "api.anilaxpayments.com",
-  "sandbox.api.anilaxpayments.com",
-]);
+export const ANILAX_AUTH_URL = COMPANY_AUTH_URL;
+
+function resolveAuthUrl() {
+  if (typeof window === "undefined") return COMPANY_AUTH_URL;
+  const host = window.location.hostname.toLowerCase();
+  if (host === COMPANY_SITE_HOST || host === `www.${COMPANY_SITE_HOST}` || host === "localhost" || host === "127.0.0.1") {
+    return new URL(COMPANY_AUTH_PATH, window.location.origin).toString();
+  }
+  return COMPANY_AUTH_URL;
+}
+
+const PROTECTED_API_HOSTS = new Set([COMPANY_SITE_HOST, `www.${COMPANY_SITE_HOST}`]);
 
 export function isProtectedApiUrl(url) {
   try {
     const parsed = new URL(url, window.location.origin);
-    return PROTECTED_API_HOSTS.has(parsed.hostname.toLowerCase());
+    const host = parsed.hostname.toLowerCase();
+    if (!PROTECTED_API_HOSTS.has(host)) return false;
+    return parsed.pathname.startsWith("/api/");
   } catch {
     return false;
   }
 }
 
-/** Send user to Anilax Payments auth before any live API usage. */
+/** Send user to Anilax auth before any live API usage. */
 export function redirectToAnilaxAuth(params = {}) {
-  const url = new URL(ANILAX_AUTH_URL);
+  const url = new URL(resolveAuthUrl());
   const returnTo =
     params.returnTo ??
     `${window.location.origin}${window.location.pathname}${window.location.hash}`;
@@ -72,7 +86,7 @@ export function installDocsAuthGuard() {
 }
 
 export function authUrlWithContext({ source = "site", endpoint, method } = {}) {
-  const url = new URL(ANILAX_AUTH_URL);
+  const url = new URL(resolveAuthUrl());
   url.searchParams.set("source", source);
   if (endpoint) url.searchParams.set("endpoint", endpoint);
   if (method) url.searchParams.set("method", method);

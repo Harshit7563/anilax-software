@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useLocation, useNavigate, useSearchParams } from "react-router-dom";
-import { redirectToAnilaxAuth } from "../lib/anilaxAuth";
 import { recordPartnerSignup } from "../lib/siteApi";
+import { COMPANY_API_V1 } from "../data/company";
 import "../styles/auth-page.css";
 
 const ROLES = [
@@ -40,12 +40,33 @@ export function AuthPage({ mode: initialMode = "signup" }) {
   });
 
   useEffect(() => {
-    setMode(location.pathname === "/login" ? "login" : "signup");
-  }, [location.pathname]);
+    const fromPath =
+      location.pathname === "/login"
+        ? "login"
+        : location.pathname === "/signup"
+          ? "signup"
+          : null;
+    const fromQuery = searchParams.get("mode");
+    if (fromPath) setMode(fromPath);
+    else if (fromQuery === "login" || fromQuery === "signup") setMode(fromQuery);
+  }, [location.pathname, searchParams]);
 
   useEffect(() => {
     const email = searchParams.get("email");
-    if (email) setForm((f) => ({ ...f, email }));
+    const name = searchParams.get("name");
+    const company = searchParams.get("company");
+    const phone = searchParams.get("phone");
+    const role = searchParams.get("role");
+    if (email || name || company || phone || role) {
+      setForm((f) => ({
+        ...f,
+        ...(email ? { email } : {}),
+        ...(name ? { name } : {}),
+        ...(company ? { company } : {}),
+        ...(phone ? { phone } : {}),
+        ...(role ? { role } : {}),
+      }));
+    }
   }, [searchParams]);
 
   useEffect(() => {
@@ -55,6 +76,12 @@ export function AuthPage({ mode: initialMode = "signup" }) {
 
   const switchMode = (next) => {
     setMode(next);
+    if (location.pathname === "/auth") {
+      const params = new URLSearchParams(searchParams);
+      params.set("mode", next);
+      navigate(`/auth?${params.toString()}`, { replace: true });
+      return;
+    }
     navigate(next === "login" ? "/login" : "/signup", { replace: true });
   };
 
@@ -77,17 +104,23 @@ export function AuthPage({ mode: initialMode = "signup" }) {
         source: mode === "login" ? "anilax-software-login" : "anilax-software-signup",
       });
     } catch {
-      /* continue to payments console even if local DB is offline */
+      /* continue even if local DB is offline */
     }
-    redirectToAnilaxAuth({
-      source: mode === "login" ? "anilax-software-login" : "anilax-software-signup",
-      mode,
-      email: form.email.trim(),
-      name: form.name.trim(),
-      company: form.company.trim(),
-      phone: form.phone.trim(),
-      role: form.role,
-    });
+
+    const returnTo = searchParams.get("returnTo");
+    if (returnTo) {
+      try {
+        const parsed = new URL(returnTo, window.location.origin);
+        if (parsed.origin === window.location.origin) {
+          navigate(`${parsed.pathname}${parsed.search}${parsed.hash}`, { replace: true });
+          return;
+        }
+      } catch {
+        /* fall through */
+      }
+    }
+    navigate(mode === "login" ? "/docs" : "/docs?sandbox=1", { replace: true });
+    setLoading(false);
   };
 
   return (
@@ -148,7 +181,7 @@ export function AuthPage({ mode: initialMode = "signup" }) {
               <code>anilax — partner console</code>
             </div>
             <pre>
-              {`$ curl https://api.anilaxpayments.com/v1/payments \\
+              {`$ curl ${COMPANY_API_V1}/payments \\
   -H "Authorization: Bearer sk_test_••••" \\
   -d '{"amount": 49900, "currency": "INR"}'
 
@@ -241,7 +274,7 @@ export function AuthPage({ mode: initialMode = "signup" }) {
                       <input
                         type="tel"
                         name="phone"
-                        placeholder="+91 98765 43210"
+                        placeholder="+91-8118898370"
                         value={form.phone}
                         onChange={update("phone")}
                         autoComplete="tel"
@@ -334,7 +367,7 @@ export function AuthPage({ mode: initialMode = "signup" }) {
             </p>
 
             <p className="auth-page__secure">
-              <span aria-hidden="true">🔒</span> Secured redirect to Anilax Payments partner console
+              <span aria-hidden="true">🔒</span> Partner portal — sandbox keys and API docs after sign-in
             </p>
           </div>
           </div>

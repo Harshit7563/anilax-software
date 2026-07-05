@@ -1,10 +1,12 @@
+import { COMPANY_API_SANDBOX, COMPANY_API_V1 } from "./company";
+
 export const SDK_HERO = {
   eyebrow: "Developer tools · SDKs",
   title: "Official SDKs for Anilax Payments",
   subtitle:
     "Typed clients, built-in retries, webhook verification, and sandbox switching — ship UPI, AePS, wallets, and payouts without hand-rolling HTTP.",
-  baseUrl: "https://api.anilaxpayments.com",
-  sandboxUrl: "https://sandbox.api.anilaxpayments.com",
+  baseUrl: COMPANY_API_V1,
+  sandboxUrl: COMPANY_API_SANDBOX,
 };
 
 export const SDK_STATS = [

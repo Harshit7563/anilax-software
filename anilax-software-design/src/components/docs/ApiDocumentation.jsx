@@ -4,7 +4,13 @@ import {
   DOCS_META,
   DOCS_NAV,
   DOCS_PAGES,
+  DOCS_PRODUCTS,
+  DOCS_QUICKSTART,
+  DOCS_SDK_LINKS,
+  API_STATS,
+  API_FEATURES,
   findDocItem,
+  getFirstDocIdInGroup,
   buildCurl,
   buildNodeSample,
 } from "../../data/apiDocs";
@@ -12,6 +18,26 @@ import { redirectToAnilaxAuth, ANILAX_AUTH_URL } from "../../lib/anilaxAuth";
 import "../../styles/docs.css";
 
 const CODE_TABS = ["curl", "node", "response"];
+
+function CopyButton({ text, className = "" }) {
+  const [copied, setCopied] = useState(false);
+
+  const copy = async () => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 2000);
+    } catch {
+      /* ignore */
+    }
+  };
+
+  return (
+    <button type="button" className={`docs-copy-btn ${className}`.trim()} onClick={copy}>
+      {copied ? "Copied" : "Copy"}
+    </button>
+  );
+}
 
 function MethodBadge({ method }) {
   return <span className={`docs-method docs-method--${method.toLowerCase()}`}>{method}</span>;
@@ -65,61 +91,154 @@ function EditorLine({ line }) {
   );
 }
 
-function OverviewConsole({ page }) {
+function DocsOverview({ page, onSelectProduct }) {
   const { editor } = page;
   if (!editor) return null;
 
   return (
     <article className="docs-article docs-article--overview">
-      <h1>{page.title}</h1>
-      <p className="docs-lead docs-lead--overview">
-        Quick reference in an editor-style view — base URLs in the terminal below.
-      </p>
+      <div className="docs-hero">
+        <div className="docs-hero__copy">
+          <p className="docs-hero__eyebrow">Anilax Developer Platform</p>
+          <h1>{DOCS_META.productName}</h1>
+          <p className="docs-lead docs-lead--overview">{DOCS_META.description}</p>
+          <div className="docs-hero__actions">
+            <button
+              type="button"
+              className="docs-hero__btn docs-hero__btn--primary"
+              onClick={() =>
+                redirectToAnilaxAuth({ source: "docs-hero" })
+              }
+            >
+              Get sandbox keys →
+            </button>
+            <Link to="/sdks" className="docs-hero__btn docs-hero__btn--ghost">
+              Browse SDKs
+            </Link>
+          </div>
+        </div>
+        <div className="docs-hero__stats">
+          {API_STATS.map((s) => (
+            <div key={s.label} className="docs-stat">
+              <strong>{s.value}</strong>
+              <span>{s.label}</span>
+            </div>
+          ))}
+        </div>
+      </div>
 
-      <div className="docs-console-window">
-        <div className="docs-console-window__chrome">
-          <div className="docs-console-window__dots" aria-hidden="true">
-            <span /><span /><span />
-          </div>
-          <span className="docs-console-window__title">{editor.filename}</span>
-          <span className="docs-console-window__badge">Read-only</span>
+      <section className="docs-section">
+        <div className="docs-section__head">
+          <h2>Product rails</h2>
+          <p>Every API your fintech stack needs — pick a module to explore endpoints.</p>
         </div>
-        <div className="docs-editor">
-          {editor.lines.map((line) =>
-            line.parts.length === 0 ? (
-              <div key={line.num} className="docs-editor__line docs-editor__line--empty">
-                <span className="docs-editor__gutter">{line.num}</span>
+        <div className="docs-product-grid">
+          {DOCS_PRODUCTS.map((product) => (
+            <button
+              key={product.id}
+              type="button"
+              className="docs-product-card"
+              onClick={() => onSelectProduct(product.id)}
+            >
+              <span className="docs-product-card__icon" aria-hidden="true">
+                {product.icon}
+              </span>
+              <div>
+                <strong>{product.title}</strong>
+                <p>{product.tagline}</p>
               </div>
-            ) : (
-              <EditorLine key={line.num} line={line} />
-            )
-          )}
+              <span className="docs-product-card__count">
+                {product.endpointCount} endpoints
+              </span>
+            </button>
+          ))}
         </div>
-        <div className="docs-terminal">
-          <div className="docs-terminal__bar">
-            <span className="docs-terminal__icon" aria-hidden="true">
-              ◆
-            </span>
-            Console — base URLs
+      </section>
+
+      <section className="docs-section">
+        <div className="docs-section__head">
+          <h2>Quick start</h2>
+          <p>From first key to production webhooks in four steps.</p>
+        </div>
+        <div className="docs-quickstart">
+          {DOCS_QUICKSTART.map((step) => (
+            <article key={step.step} className="docs-quickstart__step">
+              <span>{step.step}</span>
+              <h3>{step.title}</h3>
+              <p>{step.desc}</p>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section className="docs-section docs-section--split">
+        <div>
+          <div className="docs-section__head">
+            <h2>Platform capabilities</h2>
           </div>
-          <div className="docs-terminal__body">
-            {editor.terminal.map((row, i) => (
-              <div key={i} className="docs-terminal__row">
-                <span className="docs-terminal__prompt">{row.prompt}</span>
-                <span className="docs-terminal__cmd">{row.cmd}</span>
-                {row.output && (
-                  <div className="docs-terminal__output">
-                    <span className="docs-terminal__caret" aria-hidden="true">
-                      →
-                    </span>
-                    <code>{row.output}</code>
-                  </div>
-                )}
-              </div>
+          <ul className="docs-feature-list">
+            {API_FEATURES.map((f) => (
+              <li key={f.title}>
+                <strong>{f.title}</strong>
+                <span>{f.desc}</span>
+              </li>
+            ))}
+          </ul>
+          <div className="docs-sdk-strip">
+            {DOCS_SDK_LINKS.map((link) => (
+              <Link key={link.label} to={link.href} className="docs-sdk-chip">
+                <strong>{link.label}</strong>
+                <span>{link.desc}</span>
+              </Link>
             ))}
           </div>
         </div>
-      </div>
+
+        <div className="docs-console-window">
+          <div className="docs-console-window__chrome">
+            <div className="docs-console-window__dots" aria-hidden="true">
+              <span /><span /><span />
+            </div>
+            <span className="docs-console-window__title">{editor.filename}</span>
+            <span className="docs-console-window__badge">Sandbox ready</span>
+          </div>
+          <div className="docs-editor">
+            {editor.lines.map((line) =>
+              line.parts.length === 0 ? (
+                <div key={line.num} className="docs-editor__line docs-editor__line--empty">
+                  <span className="docs-editor__gutter">{line.num}</span>
+                </div>
+              ) : (
+                <EditorLine key={line.num} line={line} />
+              )
+            )}
+          </div>
+          <div className="docs-terminal">
+            <div className="docs-terminal__bar">
+              <span className="docs-terminal__icon" aria-hidden="true">
+                ◆
+              </span>
+              Environment URLs
+            </div>
+            <div className="docs-terminal__body">
+              {editor.terminal.map((row, i) => (
+                <div key={i} className="docs-terminal__row">
+                  <span className="docs-terminal__prompt">{row.prompt}</span>
+                  <span className="docs-terminal__cmd">{row.cmd}</span>
+                  {row.output && (
+                    <div className="docs-terminal__output">
+                      <span className="docs-terminal__caret" aria-hidden="true">
+                        →
+                      </span>
+                      <code>{row.output}</code>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
     </article>
   );
 }
@@ -129,7 +248,7 @@ function PageContent({ pageId }) {
   if (!page) return null;
 
   if (pageId === "overview" && page.editor) {
-    return <OverviewConsole page={page} />;
+    return null;
   }
 
   return (
@@ -142,9 +261,12 @@ function PageContent({ pageId }) {
       ))}
 
       {page.example && (
-        <pre className="docs-code-block">
-          <code>{page.example}</code>
-        </pre>
+        <div className="docs-code-wrap">
+          <CopyButton text={page.example} className="docs-copy-btn--float" />
+          <pre className="docs-code-block">
+            <code>{page.example}</code>
+          </pre>
+        </div>
       )}
 
       {page.codes && (
@@ -186,11 +308,7 @@ function PageContent({ pageId }) {
 }
 
 function OperationContent({ op }) {
-  const allParams = [
-    ...(op.pathParams || []),
-    ...(op.query || []),
-    ...(op.headers || []),
-  ];
+  const allParams = [...(op.pathParams || []), ...(op.query || []), ...(op.headers || [])];
 
   return (
     <article className="docs-article">
@@ -200,13 +318,17 @@ function OperationContent({ op }) {
       <div className="docs-article__title-row">
         <MethodBadge method={op.method} />
         <code className="docs-path">{op.path}</code>
+        <CopyButton text={op.path} />
       </div>
       <h1>{op.title}</h1>
       <p className="docs-lead">{op.desc}</p>
 
-      {allParams.length > 0 && (
-        <ParamTable title="Parameters" params={allParams} />
-      )}
+      <div className="docs-op-meta">
+        <span>Sandbox · JSON · Auth required</span>
+        <span>Idempotent on POST</span>
+      </div>
+
+      {allParams.length > 0 && <ParamTable title="Parameters" params={allParams} />}
 
       {op.requestBody && (
         <div className="docs-request-body">
@@ -244,6 +366,7 @@ export function ApiDocumentation() {
   const active = findDocItem(activeId);
   const isPage = active?.item?.type === "page";
   const op = active?.item?.type === "operation" ? active.item : null;
+  const overviewPage = DOCS_PAGES.overview;
 
   const filteredNav = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -279,6 +402,11 @@ export function ApiDocumentation() {
     setSidebarOpen(false);
   };
 
+  const selectProduct = (productId) => {
+    const first = getFirstDocIdInGroup(productId);
+    if (first) select(first);
+  };
+
   const rightCode = useMemo(() => {
     if (!op) return null;
     if (codeTab === "curl") return buildCurl(op);
@@ -297,7 +425,17 @@ export function ApiDocumentation() {
           <span className="docs-topbar__title">{DOCS_META.title}</span>
           <span className="docs-topbar__version">v{DOCS_META.version}</span>
         </div>
+        <div className="docs-topbar__center">
+          <span className="docs-env-pill docs-env-pill--sandbox">Sandbox</span>
+          <code className="docs-topbar__url">{DOCS_META.sandboxUrl}</code>
+        </div>
         <div className="docs-topbar__right">
+          <Link to="/sdks" className="docs-topbar__link">
+            SDKs
+          </Link>
+          <Link to="/api" className="docs-topbar__link">
+            API catalog
+          </Link>
           <a
             href={ANILAX_AUTH_URL}
             className="docs-topbar__auth"
@@ -308,9 +446,6 @@ export function ApiDocumentation() {
           >
             Sign in
           </a>
-          <Link to="/api" className="docs-topbar__link">
-            API catalog
-          </Link>
           <button
             type="button"
             className="docs-sidebar-toggle"
@@ -324,8 +459,7 @@ export function ApiDocumentation() {
 
       <div className="docs-auth-banner">
         <p>
-          API requests are only allowed after authentication. Any Try it, fetch, or direct API hit
-          from this page goes to{" "}
+          <strong>Sandbox-first.</strong> Authenticate before live calls — Try it redirects to{" "}
           <a
             href={ANILAX_AUTH_URL}
             onClick={(e) => {
@@ -333,9 +467,9 @@ export function ApiDocumentation() {
               redirectToAnilaxAuth({ source: "docs-banner" });
             }}
           >
-            anilaxpayments.com/auth
+            sign in
           </a>
-          .
+          . Production keys activate settlement rails after KYC.
         </p>
       </div>
 
@@ -344,7 +478,7 @@ export function ApiDocumentation() {
           <div className="docs-sidebar__search">
             <input
               type="search"
-              placeholder="Search endpoints…"
+              placeholder="Search 80+ endpoints…"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               aria-label="Search documentation"
@@ -353,7 +487,12 @@ export function ApiDocumentation() {
           <nav className="docs-sidebar__nav" aria-label="API documentation">
             {filteredNav.map((group) => (
               <div key={group.id} className="docs-nav-group">
-                <p className="docs-nav-group__title">{group.title}</p>
+                <p className="docs-nav-group__title">
+                  {group.title}
+                  {group.id !== "getting-started" && (
+                    <span className="docs-nav-group__count">{group.items.length}</span>
+                  )}
+                </p>
                 <ul>
                   {group.items.map((item) => (
                     <li key={item.id}>
@@ -362,9 +501,7 @@ export function ApiDocumentation() {
                         className={`docs-nav-item ${activeId === item.id ? "docs-nav-item--active" : ""}`}
                         onClick={() => select(item.id)}
                       >
-                        {item.type === "operation" && (
-                          <MethodBadge method={item.method} />
-                        )}
+                        {item.type === "operation" && <MethodBadge method={item.method} />}
                         <span className="docs-nav-item__label">{item.title}</span>
                       </button>
                     </li>
@@ -376,7 +513,13 @@ export function ApiDocumentation() {
         </aside>
 
         <main className="docs-main">
-          {isPage ? <PageContent pageId={activeId} /> : op ? <OperationContent op={op} /> : null}
+          {activeId === "overview" && overviewPage?.editor ? (
+            <DocsOverview page={overviewPage} onSelectProduct={selectProduct} />
+          ) : isPage ? (
+            <PageContent pageId={activeId} />
+          ) : op ? (
+            <OperationContent op={op} />
+          ) : null}
         </main>
 
         <aside className="docs-panel">
@@ -396,19 +539,22 @@ export function ApiDocumentation() {
               </div>
               <div className="docs-panel__try">
                 <span className="docs-panel__badge">Auth required</span>
-                <button
-                  type="button"
-                  className="docs-try-btn"
-                  onClick={() =>
-                    redirectToAnilaxAuth({
-                      source: "docs-try-it",
-                      endpoint: op.path,
-                      method: op.method,
-                    })
-                  }
-                >
-                  Try it → Auth
-                </button>
+                <div className="docs-panel__try-actions">
+                  {rightCode && <CopyButton text={rightCode} />}
+                  <button
+                    type="button"
+                    className="docs-try-btn"
+                    onClick={() =>
+                      redirectToAnilaxAuth({
+                        source: "docs-try-it",
+                        endpoint: op.path,
+                        method: op.method,
+                      })
+                    }
+                  >
+                    Try it → Auth
+                  </button>
+                </div>
               </div>
               <pre className="docs-code-block docs-code-block--panel">
                 <code>{rightCode}</code>
@@ -416,7 +562,11 @@ export function ApiDocumentation() {
             </>
           ) : (
             <div className="docs-panel__intro">
-              <p className="docs-panel__label">Authenticate first</p>
+              <p className="docs-panel__label">Live reference</p>
+              <p className="docs-panel__hint docs-panel__hint--lead">
+                Select any endpoint to view cURL, Node.js, and sample responses.
+              </p>
+              <p className="docs-panel__label">Authenticate</p>
               <a
                 href={ANILAX_AUTH_URL}
                 className="docs-panel__auth-link"
@@ -429,10 +579,20 @@ export function ApiDocumentation() {
               </a>
               <p className="docs-panel__label">Sandbox base URL</p>
               <code>{DOCS_META.sandboxUrl}</code>
-              <p className="docs-panel__hint">
-                Select an endpoint from the sidebar. Try it and in-browser API calls redirect to
-                auth.
-              </p>
+              <p className="docs-panel__label">Production base URL</p>
+              <code>{DOCS_META.baseUrl}</code>
+              <div className="docs-panel__products">
+                {DOCS_PRODUCTS.slice(0, 4).map((p) => (
+                  <button
+                    key={p.id}
+                    type="button"
+                    className="docs-panel__product"
+                    onClick={() => selectProduct(p.id)}
+                  >
+                    {p.icon} {p.title}
+                  </button>
+                ))}
+              </div>
             </div>
           )}
         </aside>

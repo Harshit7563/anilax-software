@@ -1,0 +1,110 @@
+.changelog-page {
+  padding-bottom: 4rem;
+}
+
+.changelog-hero {
+  padding: 3.5rem 1.25rem 2rem;
+  text-align: center;
+  background: linear-gradient(180deg, #fff7ed 0%, #fff 100%);
+}
+
+.changelog-hero__eyebrow {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--orange, #ea580c);
+  margin-bottom: 0.75rem;
+}
+
+.changelog-hero h1 {
+  font-family: var(--font-display);
+  font-size: clamp(1.85rem, 4vw, 2.75rem);
+  font-weight: 800;
+  margin-bottom: 0.75rem;
+}
+
+.changelog-hero__sub {
+  max-width: 40rem;
+  margin: 0 auto 1rem;
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+
+.changelog-hero__link {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--orange, #ea580c);
+}
+
+.changelog-list {
+  padding: 1.5rem 0;
+}
+
+.changelog-list__inner {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 0 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.changelog-entry {
+  padding: 1.25rem 1.35rem;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+}
+
+.changelog-entry__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.85rem;
+}
+
+.changelog-entry__tag {
+  display: inline-block;
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--orange, #ea580c);
+  margin-bottom: 0.35rem;
+}
+
+.changelog-entry h2 {
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  font-weight: 800;
+  line-height: 1.35;
+}
+
+.changelog-entry__head time {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.changelog-entry__highlights {
+  margin: 0;
+  padding-left: 1.15rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  font-size: 0.9rem;
+  line-height: 1.55;
+  color: var(--text-muted);
+}
+
+@media (max-width: 640px) {
+  .changelog-hero {
+    padding-top: 2.5rem;
+  }
+
+  .changelog-entry__head {
+    flex-direction: column;
+  }
+}

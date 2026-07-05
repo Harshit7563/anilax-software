@@ -1,10 +1,10 @@
 export const SOFTWARE_HERO = {
-  eyebrow: "Anilax Software · Development",
-  title: "Custom software & apps, engineered to ship",
+  eyebrow: "Anilax Software · Product Catalog",
+  title: "68+ software products we build & customize",
   subtitle:
-    "From UPI payment stacks to school ERPs and on-demand platforms — we design, build, and scale products that match your business.",
+    "ERP, CRM, HMS, school ERP, e-commerce, logistics, fintech, on-demand apps, and every major category top software companies deliver — ready-made modules or fully custom.",
   ctaPrimary: { label: "Start a project", href: "/#contact" },
-  ctaSecondary: { label: "View all solutions", href: "#solutions" },
+  ctaSecondary: { label: "View all services", href: "/services" },
 };
 
 export const SOFTWARE_STATS = [
