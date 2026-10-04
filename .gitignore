@@ -1,10 +1,14 @@
+# Dependencies
 node_modules
+
+# Build
 dist
 .DS_Store
 *.local
+
+# Secrets
 .env
 .env.*
 !.env.example
 
-# Separate backend checkout (own repo)
 anilax-software-backend/

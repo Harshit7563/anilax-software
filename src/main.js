@@ -39,10 +39,95 @@ function navigate(to, { replace = false } = {}) {
   window.scrollTo({ top: 0, behavior: "instant" in window ? "instant" : "auto" });
 }
 
+function closeAllModals(root = app) {
+  root.querySelector("[data-consult-modal]")?.setAttribute("hidden", "");
+  root.querySelector("[data-project-modal]")?.setAttribute("hidden", "");
+  const consult = root.querySelector("[data-consult-modal]");
+  const project = root.querySelector("[data-project-modal]");
+  if (consult) consult.hidden = true;
+  if (project) project.hidden = true;
+  document.body.classList.remove("modal-open");
+}
+
+let dropdownPinnedId = null;
+let dropdownLeaveTimer = null;
+
+function closeAllDropdowns(root = app) {
+  clearTimeout(dropdownLeaveTimer);
+  dropdownLeaveTimer = null;
+  dropdownPinnedId = null;
+  root?.querySelectorAll("[data-panel].is-open").forEach((p) => p.classList.remove("is-open"));
+  root?.querySelectorAll("[data-dd].is-open").forEach((d) => d.classList.remove("is-open"));
+  root?.querySelectorAll("[data-dropdown]").forEach((b) => b.setAttribute("aria-expanded", "false"));
+}
+
+function prepModalOpen(root) {
+  closeAllDropdowns(root);
+  root.querySelector("[data-nav]")?.classList.remove("is-open");
+  closeAllModals(root);
+}
+
+function openConsultModal(root = app) {
+  const modal = root.querySelector("[data-consult-modal]");
+  if (!modal) return;
+  prepModalOpen(root);
+  modal.hidden = false;
+  document.body.classList.add("modal-open");
+  window.setTimeout(() => modal.querySelector('input[name="name"]')?.focus(), 40);
+}
+
+function syncBodyModalLock(root = app) {
+  const open =
+    !root.querySelector("[data-consult-modal]")?.hidden ||
+    !root.querySelector("[data-project-modal]")?.hidden;
+  document.body.classList.toggle("modal-open", Boolean(open));
+}
+
+function closeConsultModal(root = app) {
+  const modal = root.querySelector("[data-consult-modal]");
+  if (!modal) return;
+  modal.hidden = true;
+  syncBodyModalLock(root);
+}
+
+function openProjectModal(root = app) {
+  const modal = root.querySelector("[data-project-modal]");
+  if (!modal) return;
+  prepModalOpen(root);
+  modal.hidden = false;
+  document.body.classList.add("modal-open");
+  window.setTimeout(() => modal.querySelector('input[name="name"]')?.focus(), 40);
+}
+
+function closeProjectModal(root = app) {
+  const modal = root.querySelector("[data-project-modal]");
+  if (!modal) return;
+  modal.hidden = true;
+  syncBodyModalLock(root);
+}
+
 function mount() {
+  if (window.__anilaxRotateTimer) {
+    clearInterval(window.__anilaxRotateTimer);
+    window.__anilaxRotateTimer = null;
+  }
+  clearTimeout(dropdownLeaveTimer);
+  dropdownLeaveTimer = null;
+  dropdownPinnedId = null;
   const route = path();
-  app.innerHTML = renderShell(route, renderPage(route));
+  const forceConsult = route === "/free-consultation" || route === "/contact";
+  const forceProject = route === "/start-project";
+  const viewRoute = forceConsult || forceProject ? "/" : route;
+  if (forceConsult || forceProject) history.replaceState({}, "", "/");
+  app.innerHTML = renderShell(viewRoute, renderPage(viewRoute));
   bind(app);
+  if (forceConsult || window.__anilaxOpenConsult) {
+    window.__anilaxOpenConsult = false;
+    openConsultModal(app);
+  } else if (forceProject || window.__anilaxOpenProject) {
+    window.__anilaxOpenProject = false;
+    openProjectModal(app);
+  }
 }
 
 function bind(root) {
@@ -51,9 +136,49 @@ function bind(root) {
       const href = a.getAttribute("href");
       if (!href || href.startsWith("http") || href.startsWith("mailto:") || href.startsWith("tel:")) return;
       if (href.startsWith("#")) return;
+      if (href === "/free-consultation" || href === "/contact") {
+        e.preventDefault();
+        openConsultModal(root);
+        return;
+      }
+      if (href === "/start-project") {
+        e.preventDefault();
+        openProjectModal(root);
+        return;
+      }
       e.preventDefault();
       navigate(href);
     });
+  });
+
+  root.querySelectorAll("[data-consult-open]").forEach((el) => {
+    el.addEventListener("click", (e) => {
+      e.preventDefault();
+      openConsultModal(root);
+    });
+  });
+
+  root.querySelectorAll("[data-consult-close]").forEach((el) => {
+    el.addEventListener("click", () => closeConsultModal(root));
+  });
+
+  root.querySelectorAll("[data-project-open]").forEach((el) => {
+    el.addEventListener("click", (e) => {
+      e.preventDefault();
+      openProjectModal(root);
+    });
+  });
+
+  root.querySelectorAll("[data-project-close]").forEach((el) => {
+    el.addEventListener("click", () => closeProjectModal(root));
+  });
+
+  root.querySelector("[data-consult-modal]")?.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") closeConsultModal(root);
+  });
+
+  root.querySelector("[data-project-modal]")?.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") closeProjectModal(root);
   });
 
   root.querySelectorAll("[data-menu-toggle]").forEach((btn) => {
@@ -62,22 +187,89 @@ function bind(root) {
     });
   });
 
+  function canHoverDropdowns() {
+    return window.matchMedia("(hover: hover) and (pointer: fine)").matches;
+  }
+
+  function openDropdown(id) {
+    root.querySelectorAll("[data-panel]").forEach((p) => {
+      const on = p.getAttribute("data-panel") === id;
+      p.classList.toggle("is-open", on);
+    });
+    root.querySelectorAll("[data-dd]").forEach((d) => {
+      const btn = d.querySelector("[data-dropdown]");
+      const on = btn?.getAttribute("data-dropdown") === id;
+      d.classList.toggle("is-open", on);
+      btn?.setAttribute("aria-expanded", on ? "true" : "false");
+    });
+  }
+
+  function scheduleDropdownClose() {
+    clearTimeout(dropdownLeaveTimer);
+    dropdownLeaveTimer = window.setTimeout(() => {
+      if (dropdownPinnedId) {
+        openDropdown(dropdownPinnedId);
+        return;
+      }
+      closeAllDropdowns(root);
+    }, 220);
+  }
+
+  function cancelDropdownClose() {
+    clearTimeout(dropdownLeaveTimer);
+    dropdownLeaveTimer = null;
+  }
+
   root.querySelectorAll("[data-dropdown]").forEach((btn) => {
     btn.addEventListener("click", (e) => {
+      e.preventDefault();
       e.stopPropagation();
       const id = btn.getAttribute("data-dropdown");
-      root.querySelectorAll("[data-panel]").forEach((p) => {
-        if (p.getAttribute("data-panel") !== id) p.classList.remove("is-open");
-      });
-      root.querySelector(`[data-panel="${id}"]`)?.classList.toggle("is-open");
+      const panel = root.querySelector(`[data-panel="${id}"]`);
+      const isOpen = panel?.classList.contains("is-open");
+      if (isOpen && dropdownPinnedId === id) {
+        closeAllDropdowns(root);
+        return;
+      }
+      dropdownPinnedId = id;
+      openDropdown(id);
     });
   });
 
-  document.addEventListener(
-    "click",
-    () => root.querySelectorAll("[data-panel].is-open").forEach((p) => p.classList.remove("is-open")),
-    { once: true }
-  );
+  root.querySelectorAll("[data-dd]").forEach((dd) => {
+    const id = dd.querySelector("[data-dropdown]")?.getAttribute("data-dropdown");
+    const panel = dd.querySelector("[data-panel]");
+
+    const onEnter = () => {
+      if (!canHoverDropdowns() || !id) return;
+      cancelDropdownClose();
+      openDropdown(id);
+    };
+
+    const onLeave = () => {
+      if (!canHoverDropdowns()) return;
+      scheduleDropdownClose();
+    };
+
+    dd.addEventListener("mouseenter", onEnter);
+    dd.addEventListener("mouseleave", onLeave);
+    // fixed mega panel is outside the nav button box — track it too
+    panel?.addEventListener("mouseenter", onEnter);
+    panel?.addEventListener("mouseleave", onLeave);
+  });
+
+  if (window.__anilaxDdClose) document.removeEventListener("click", window.__anilaxDdClose);
+  window.__anilaxDdClose = (e) => {
+    if (e.target.closest?.("[data-dd]") || e.target.closest?.("[data-panel]")) return;
+    closeAllDropdowns(root);
+  };
+  document.addEventListener("click", window.__anilaxDdClose);
+
+  if (window.__anilaxDdEsc) document.removeEventListener("keydown", window.__anilaxDdEsc);
+  window.__anilaxDdEsc = (e) => {
+    if (e.key === "Escape") closeAllDropdowns(root);
+  };
+  document.addEventListener("keydown", window.__anilaxDdEsc);
 
   root.querySelectorAll("[data-faq]").forEach((btn) => {
     btn.addEventListener("click", () => {
@@ -209,9 +401,19 @@ function bind(root) {
       try {
         await sendEnquiryViaApi(form);
         form.reset();
+        const kind = form.getAttribute("data-form-kind");
         if (note) {
           note.hidden = false;
-          note.textContent = "Your requirement has been sent to WhatsApp.";
+          note.textContent =
+            kind === "consult"
+              ? "Consultation request sent — we’ll call you soon."
+              : "Project brief sent — we’ll reply with next steps.";
+        }
+        if (form.closest("[data-consult-modal]")) {
+          window.setTimeout(() => closeConsultModal(root), 1600);
+        }
+        if (form.closest("[data-project-modal]")) {
+          window.setTimeout(() => closeProjectModal(root), 1600);
         }
       } catch (err) {
         if (note) {
@@ -233,6 +435,25 @@ function bind(root) {
     });
   });
 
+  const rotate = root.querySelector("[data-rotate]");
+  if (rotate) {
+    const words = (rotate.getAttribute("data-rotate") || "").split("|").filter(Boolean);
+    const wordEl = rotate.querySelector("[data-rotate-word]");
+    let idx = 0;
+    if (words.length > 1 && wordEl) {
+      window.__anilaxRotateTimer = window.setInterval(() => {
+        idx = (idx + 1) % words.length;
+        wordEl.classList.add("is-out");
+        window.setTimeout(() => {
+          wordEl.textContent = words[idx];
+          wordEl.classList.remove("is-out");
+          wordEl.classList.add("is-in");
+          window.setTimeout(() => wordEl.classList.remove("is-in"), 350);
+        }, 220);
+      }, 2600);
+    }
+  }
+
   const io = new IntersectionObserver(
     (entries) => {
       entries.forEach((e) => {
@@ -246,7 +467,7 @@ function bind(root) {
   );
   root
     .querySelectorAll(
-      ".hero__inner, .hero__cards, .band__inner, .section__head, .svc-list__item, .work, .step, .bento__card, .quote, .plan, .faq__item, .post, .table-wrap, .contact-card, .info-card, .page-hero__inner, .prose-card, .login__panel, .login__side"
+      ".hero__copy, .hero__visual, .tech-row, .show, .about__copy, .about__stat, .section__head, .svc, .ind, .case, .steps li, .price, .post, .folio, .cta-panel, .contact-card, .side-panel, .page-hero__inner, .prose-split, .form-layout"
     )
     .forEach((el, i) => {
       el.classList.add("reveal");
@@ -255,7 +476,16 @@ function bind(root) {
     });
 }
 
+function bindNavScroll() {
+  const onScroll = () => {
+    document.querySelector("[data-nav]")?.classList.toggle("is-scrolled", window.scrollY > 8);
+  };
+  window.addEventListener("scroll", onScroll, { passive: true });
+  onScroll();
+}
+
 window.addEventListener("popstate", mount);
 mount();
+bindNavScroll();
 
 export { navigate };
