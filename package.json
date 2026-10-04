@@ -1,15 +1,22 @@
 {
   "name": "anilax-software",
   "private": true,
-  "description": "Hostinger bridge — builds anilax-software-design. Prefer deploying anilax-software-design repo directly.",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Anilax Software marketing site — Vite SPA + WhatsApp contact API",
   "engines": {
     "node": ">=20"
   },
   "scripts": {
-    "build": "npm ci --prefix anilax-software-design && npm run build --prefix anilax-software-design && rm -rf dist && cp -R anilax-software-design/dist dist",
-    "start": "serve -s dist -l tcp://0.0.0.0:${PORT:-3000}"
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "start": "node server/prod.js"
+  },
+  "devDependencies": {
+    "vite": "^6.2.0"
   },
   "dependencies": {
-    "serve": "^14.2.4"
+    "jspdf": "^4.2.1"
   }
 }

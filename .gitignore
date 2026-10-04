@@ -1,48 +1,10 @@
-# Dependencies
-node_modules/
-**/node_modules/
-
-# Build
-dist/
-**/dist/
-
-# Env & secrets
-.env
-.env.local
-**/.env
-!**/.env.example
-
-# Logs
-logs
-*.log
-
-# Editor
-.vscode/*
-!.vscode/extensions.json
-.idea
+node_modules
+dist
 .DS_Store
 *.local
-
-# Old root artifacts
-dist-ssr
-
-# APK & Android build
-*.apk
-**/android/app/build/
-**/android/.gradle/
-**/android/build/
-**/android/local.properties
-
-# API runtime data
-**/server/data/
-
-# Env secrets
 .env
-.env.local
-**/.env
-!**/.env.example
-!**/.env.production
-!**/.env.android
+.env.*
+!.env.example
 
-# Separate backend repo (has its own git)
+# Separate backend checkout (own repo)
 anilax-software-backend/

@@ -1,31 +1,19 @@
 # Anilax Software
 
-Live site: **https://anilaxsoftware.com**
+Live site: **https://www.anilaxsoftware.com**
 
-All website code lives in **`anilax-software-design/`** (React + Vite + admin + Shree AI + Android shell).
-
-The old root `src/`, `server/`, and `database/` folders have been removed from this repo.
+Vite SPA with server-side WhatsApp contact delivery (`/api/contact`).
 
 ## Local run
 
-**Terminal 1 — API (queries, admin, blog):**
 ```bash
-cd anilax-software-design
 npm install
-npm run server
-```
-
-**Terminal 2 — website:**
-```bash
-cd anilax-software-design
 npm run dev
 ```
 
-Admin: **http://localhost:5173/admin/login**
+Copy `.env.example` → `.env` and set Green-API (or Meta) credentials.
 
 ## Hostinger deploy
-
-Deploy this repo **`anilax-software`** or the **`anilax-software-design`** folder directly.
 
 | Setting | Value |
 |---------|--------|
@@ -35,18 +23,4 @@ Deploy this repo **`anilax-software`** or the **`anilax-software-design`** folde
 | Start | `npm start` |
 | Output | `dist` |
 
-Set env: `VITE_API_URL=https://anilaxsoftware.com`
-
-See **`anilax-software-design/HOSTINGER.md`** for full steps.
-
-## Backend API
-
-Backend code is in a separate repo: **`anilax-software-backend`** (see `GITHUB-SETUP.md`).
-
-## GitHub repos
-
-| Repo | Purpose |
-|------|---------|
-| [anilax-software](https://github.com/Harshit7563/anilax-software) | Root deploy (builds design subfolder) |
-| [anilax-software-design](https://github.com/Harshit7563/anilax-software-design) | UI only (optional) |
-| [anilax-software-backend](https://github.com/Harshit7563/anilax-software-backend) | API + Postgres |
+Set the same WhatsApp env vars on Hostinger that you use locally (never commit `.env`).
